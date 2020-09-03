@@ -1,0 +1,2 @@
+#define Breakout_VERSION_MAJOR @Breakout_VERSION_MAJOR@
+#define Breakout_VERSION_MINOR @Breakout_VERSION_MINOR@
