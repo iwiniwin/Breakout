@@ -1,7 +1,11 @@
 #include "glad/glad.h"
 #include "GLFW/glfw3.h"
-// #include <glm.hpp>
+#include "glm.hpp"
 #include <iostream>
+
+#include "ft2build.h"
+#include FT_FREETYPE_H
+
 using namespace std;
  
 int main()
@@ -32,6 +36,22 @@ int main()
         
         glfwPollEvents();
 		glfwSwapBuffers(window);
+	}
+
+	glm::vec3 t;
+
+	FT_Library ft;
+	if (FT_Init_FreeType(&ft)) {
+		cout << "ERROR::FREETYPE: Could not init FreeType Library" << endl;
+	}else{
+		cout << "gggggg" << endl;
+	}
+
+	FT_Face face;
+	if (FT_New_Face(ft, "fonts/arial.ttf", 0, &face)) {
+		cout << "ERROR::FREETYPE: Failed to load font" << endl;
+	}else{
+		cout << "ttttttttt";
 	}
 
 	// glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);

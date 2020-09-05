@@ -26,6 +26,10 @@ include_directories (3rd/glfw/include)
 include_directories (3rd/glad/include)
 add_library (glad 3rd/glad/src/glad.c)
 
+include_directories (3rd/glm/glm)
+
+add_subdirectory (3rd/freetype)
+include_directories (3rd/freetype/include)
 
 # 查找当前目录下的所有源文件并存入DIR_SRCS变量
 # aux_source_directory(./src DIR_SRCS)
@@ -34,6 +38,6 @@ add_library (glad 3rd/glad/src/glad.c)
 add_executable (Breakout src/main.cc)
 
 # 添加链接库
-target_link_libraries (Breakout glfw glad)
+target_link_libraries (Breakout glfw glad freetype)
 
 # target_compile_definitions(Breakout PRIVATE GLFW_INCLUDE_NONE)
