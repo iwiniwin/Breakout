@@ -2,8 +2,8 @@
 
 #include "glad/glad.h"
 #include "GLFW/glfw3.h"
-#include "game.h"
-#include "resource_manager.h"
+#include "core/game.h"
+#include "core/resource_manager.h"
 
 using namespace std;
 
@@ -26,7 +26,7 @@ int main()
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
 	// 创建建一个窗口对象，这个对象存放了所有和窗口相关的数据
-	GLFWwindow* window = glfwCreateWindow(kWidth, kHeight, "LearnOpenGL", NULL, NULL);
+	GLFWwindow* window = glfwCreateWindow(kWidth, kHeight, "Breakout", NULL, NULL);
 	if (window == NULL) {
 		cout << "Failed to create GLFW window" << endl;
 		glfwTerminate();
@@ -60,7 +60,7 @@ int main()
 	breakout.state_ = KGameActive;
 
     while (!glfwWindowShouldClose(window)) {
-        float current_time = glfwGetTime();
+        float current_time = (float)glfwGetTime();
 		delta_time = current_time - last_time;
 		last_time = current_time;
         

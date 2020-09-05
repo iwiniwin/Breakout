@@ -43,10 +43,13 @@ include_directories (${STB_IMAGE_DIR})
 add_library (stb_image ${STB_IMAGE_DIR}/stb_image.cc)
 
 # 查找当前目录下的所有源文件并存入DIR_SRCS变量
-aux_source_directory(src SRC_DIR)
+# aux_source_directory(src SRC_DIR)
+
+# 递归列出所有源文件
+file (GLOB_RECURSE SOURCE_FILES *.cc)
 
 # 添加一个可编译的目标到工程
-add_executable (Breakout ${SRC_DIR})
+add_executable (Breakout ${SOURCE_FILES})
 
 # 添加链接库
 target_link_libraries (Breakout glfw glad freetype stb_image)

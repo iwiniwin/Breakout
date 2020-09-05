@@ -5,8 +5,8 @@
 #include <string>
 using namespace std;
 
-#include "texture.h"
-#include "shader.h"
+#include "../render/texture.h"
+#include "../render/shader.h"
 
 class ResourceManager
 {
