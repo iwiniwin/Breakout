@@ -1,16 +1,18 @@
 # cmake最低版本号要求
 cmake_minimum_required (VERSION 2.8)
 
-project (Breakout)
-set (Breakout_VERSION_MAJOR 1)
-set (Breakout_VERSION_MINOR 0)
+set(PROJECT_NAME Breakout)
+
+project (${PROJECT_NAME})
+set (${PROJECT_NAME}_VERSION_MAJOR 1)
+set (${PROJECT_NAME}_VERSION_MINOR 0)
 
 set (CMAKE_CXX_STAND 11)
 
 # 配置一个头文件来传递一个cmake设置到源代码
 configure_file (
-    "${PROJECT_SOURCE_DIR}/BreakoutConfig.h.in"
-    "${PROJECT_SOURCE_DIR}/BreakoutConfig.h"
+    "${PROJECT_SOURCE_DIR}/${PROJECT_NAME}Config.h.in"
+    "${PROJECT_SOURCE_DIR}/${PROJECT_NAME}Config.h"
 )
 
 set (3RD_DIR 3rd)
@@ -49,9 +51,16 @@ add_library (stb_image ${STB_IMAGE_DIR}/stb_image.cc)
 file (GLOB_RECURSE SOURCE_FILES *.cc)
 
 # 添加一个可编译的目标到工程
-add_executable (Breakout ${SOURCE_FILES})
+add_executable (${PROJECT_NAME} ${SOURCE_FILES})
 
 # 添加链接库
-target_link_libraries (Breakout glfw glad freetype stb_image)
+target_link_libraries (${PROJECT_NAME} glfw glad freetype stb_image)
 
-# target_compile_definitions(Breakout PRIVATE GLFW_INCLUDE_NONE)
+# target_compile_definitions(${PROJECT_NAME} PRIVATE GLFW_INCLUDE_NONE)
+
+# 复制资源文件到工作目录
+add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_directory
+    ${CMAKE_SOURCE_DIR}/resources
+    ${CMAKE_CURRENT_BINARY_DIR}/Debug/resources
+)

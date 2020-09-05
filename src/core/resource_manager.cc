@@ -5,7 +5,6 @@
 #include <fstream>
 
 #include "stb_image.h"
-#include "glad/glad.h"
 
 map<string, Texture2D> ResourceManager::textures_;
 map<string, Shader> ResourceManager::shaders_;
