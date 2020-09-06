@@ -45,6 +45,7 @@ void SpriteRenderer::DrawSprite(Texture2D& texture, glm::vec2 position, glm::vec
 
 void SpriteRenderer::intRenderData(){
     unsigned int vbo;
+    // (0, 1)对应的纹理坐标是(0, 0)是因为，(0, 1)经正交投影矩阵变换后就是左上角是(0, 0)，
     float vertices[] = {
         // Pos     // TexCoords
         0.0f, 1.0f, 0.0f, 1.0f,
