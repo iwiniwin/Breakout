@@ -44,6 +44,9 @@ set (STB_IMAGE_DIR ${3RD_DIR}/stb_image)
 include_directories (${STB_IMAGE_DIR})
 add_library (stb_image ${STB_IMAGE_DIR}/stb_image.cc)
 
+# 设置MSVC编译编码
+add_compile_options("$<$<CXX_COMPILER_ID:MSVC>:/source-charset:utf-8>")
+
 # 查找当前目录下的所有源文件并存入DIR_SRCS变量
 # aux_source_directory(src SRC_DIR)
 
@@ -52,6 +55,11 @@ file (GLOB_RECURSE SOURCE_FILES *.cc)
 
 # 添加一个可编译的目标到工程
 add_executable (${PROJECT_NAME} ${SOURCE_FILES})
+
+# 设置工作目录
+# set_property(TARGET ${PROJECT_NAME} PROPERTY VS_DEBUGGER_WORKING_DIRECTORY 
+#     ${CMAKE_SOURCE_DIR}/resources
+# )
 
 # 添加链接库
 target_link_libraries (${PROJECT_NAME} glfw glad freetype stb_image)
@@ -62,5 +70,5 @@ target_link_libraries (${PROJECT_NAME} glfw glad freetype stb_image)
 add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy_directory
     ${CMAKE_SOURCE_DIR}/resources
-    ${CMAKE_CURRENT_BINARY_DIR}/Debug/resources
+    $<TARGET_FILE_DIR:${PROJECT_NAME}>/resources
 )
