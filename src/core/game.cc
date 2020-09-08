@@ -74,11 +74,11 @@ void Game::Init(){
 
     // 初始化小球
     glm::vec2 ball_pos = paddle_pos + glm::vec2(kPaddleSize.x / 2 - kBallRadius, -kBallRadius * 2);
-    ball = new BallObject(glm::vec2(400, 300), 100, kBallVelocity, ResourceManager::GetTexture("ball"));
+    ball = new BallObject(ball_pos, kBallRadius, kBallVelocity, ResourceManager::GetTexture("ball"));
 }
 
 void Game::Update(float dt){
-    // ball->Move(dt, width_);
+    ball->Move(dt, width_);
 }
 
 void Game::ProcessInput(float dt){
@@ -89,12 +89,18 @@ void Game::ProcessInput(float dt){
             paddle->position_.x -= velocity;
             if(paddle->position_.x < 0)
                 paddle->position_.x = 0;
+            if(ball->stuck_){
+                ball->position_ = paddle->position_ + glm::vec2(kPaddleSize.x / 2 - kBallRadius, -kBallRadius * 2);
+            }
         }
             
         if(keys_[GLFW_KEY_D]){
             paddle->position_.x += velocity;
             if(paddle->position_.x > width_ - paddle->size_.x)
                 paddle->position_.x = width_ - paddle->size_.x;
+            if(ball->stuck_){
+                ball->position_ = paddle->position_ + glm::vec2(kPaddleSize.x / 2 - kBallRadius, -kBallRadius * 2);
+            }
         }
             
         if(keys_[GLFW_KEY_SPACE])

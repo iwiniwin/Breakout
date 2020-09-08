@@ -4,7 +4,7 @@ BallObject::BallObject()
     : GameObject(), radius_(12.5f), stuck_(true) {}
 
 BallObject::BallObject(glm::vec2 pos, float radius, glm::vec2 velocity, Texture2D sprite)
-    : GameObject(pos, glm::vec2(radius_ * 2, radius_ * 2), sprite_, glm::vec3(1.0f), velocity), radius_(radius), stuck_(true) {}
+    : GameObject(pos, glm::vec2(radius * 2, radius * 2), sprite, glm::vec3(1.0f), velocity), radius_(radius), stuck_(true) {}
 
 glm::vec2 BallObject::Move(float dt, unsigned int window_width){
     if(!stuck_){
