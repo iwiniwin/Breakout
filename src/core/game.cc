@@ -26,9 +26,33 @@ void Game::Init(){
     shader.Use().SetInteger("image", 0);
     shader.SetMatrix4("projection", projection);
 
-    ResourceManager::LoadTexture("resources/textures/awesomeface.png", GL_TRUE, "face");
-
     sprite_renderer = new SpriteRenderer(shader);
+
+    // 加载纹理
+    ResourceManager::LoadTexture("resources/textures/background.jpg", false, "background");
+    ResourceManager::LoadTexture("resources/textures/awesomeface.png", GL_TRUE, "face");
+    ResourceManager::LoadTexture("resources/textures/block_solid.png", GL_TRUE, "block_solid");
+    ResourceManager::LoadTexture("resources/textures/block.png", GL_TRUE, "block");
+
+    // 加载关卡
+    GameLevel one;
+    one.Load("resources/levels/one.lvl", width_, height_ * 0.5);
+    levels_.push_back(one);
+
+    GameLevel two;
+    two.Load("resources/levels/two.lvl", width_, height_ * 0.5);
+    levels_.push_back(two);
+
+    GameLevel three;
+    three.Load("resources/levels/three.lvl", width_, height_ * 0.5);
+    levels_.push_back(three);
+
+    GameLevel four;
+    four.Load("resources/levels/four.lvl", width_, height_ * 0.5);
+    levels_.push_back(four);
+
+    // 设置当前关卡
+    level_ = 0;
 }
 
 void Game::Update(float dt){
@@ -40,7 +64,13 @@ void Game::ProcessInput(float dt){
 }
 
 void Game::Render(){
-    Texture2D texture = ResourceManager::GetTexture("face");
-    sprite_renderer->DrawSprite(texture, glm::vec2(200, 200), glm::vec2(300, 400), 45.0f, glm::vec3(0.0f, 1.0f, 0.0f));
+    if(state_ == KGameActive){
+        // 绘制背景
+        Texture2D texture = ResourceManager::GetTexture("background");
+        sprite_renderer->DrawSprite(texture, glm::vec2(0, 0), glm::vec2(width_, height_), 0.0f);
+
+        // 绘制关卡
+        levels_[level_].Draw(*sprite_renderer);
+    }
 }
 

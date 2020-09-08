@@ -1,6 +1,10 @@
 #ifndef GAME_H
 #define GAME_H
 
+#include <vector>
+using namespace std;
+
+#include "../game/game_level.h"
 
 // 当前的游戏状态
 enum GameState {
@@ -18,6 +22,11 @@ public:
     bool keys_[1024];
     // 游戏分辨率
     unsigned int width_, height_;
+
+    // 游戏中所有关卡
+    vector<GameLevel> levels_;
+    // 当前关卡
+    unsigned level_;
 
     Game(unsigned int width, unsigned int height);
     ~Game();
