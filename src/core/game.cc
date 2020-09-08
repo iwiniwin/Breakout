@@ -3,6 +3,7 @@
 #include "game.h"
 #include "resource_manager.h"
 #include "../render/sprite_renderer.h"
+#include "../game/ball_object.h"
 #include "GLFW/glfw3.h"
 
 SpriteRenderer* sprite_renderer;
@@ -12,6 +13,12 @@ const glm::vec2 kPaddleSize(100, 20);
 // 挡板速度
 const float kPaddleVelocity(500.0f);
 GameObject* paddle;
+
+// 球的速度
+const glm::vec2 kBallVelocity(100.0f, -350.0f);
+// 球的半径
+const float kBallRadius = 12.5f;
+BallObject *ball;
 
 Game::Game(unsigned int width, unsigned int height){
     width_ = width;
@@ -36,7 +43,7 @@ void Game::Init(){
 
     // 加载纹理
     ResourceManager::LoadTexture("resources/textures/background.jpg", false, "background");
-    ResourceManager::LoadTexture("resources/textures/awesomeface.png", true, "face");
+    ResourceManager::LoadTexture("resources/textures/awesomeface.png", true, "ball");
     ResourceManager::LoadTexture("resources/textures/block_solid.png", false, "block_solid");
     ResourceManager::LoadTexture("resources/textures/block.png", false, "block");
     ResourceManager::LoadTexture("resources/textures/paddle.png", true, "paddle");
@@ -64,10 +71,14 @@ void Game::Init(){
     // 初始化挡板
     glm::vec2 paddle_pos = glm::vec2(width_ / 2 - kPaddleSize.x / 2, height_ - kPaddleSize.y);
     paddle = new GameObject(paddle_pos, kPaddleSize, ResourceManager::GetTexture("paddle"));
+
+    // 初始化小球
+    glm::vec2 ball_pos = paddle_pos + glm::vec2(kPaddleSize.x / 2 - kBallRadius, -kBallRadius * 2);
+    ball = new BallObject(glm::vec2(400, 300), 100, kBallVelocity, ResourceManager::GetTexture("ball"));
 }
 
 void Game::Update(float dt){
-
+    // ball->Move(dt, width_);
 }
 
 void Game::ProcessInput(float dt){
@@ -86,6 +97,8 @@ void Game::ProcessInput(float dt){
                 paddle->position_.x = width_ - paddle->size_.x;
         }
             
+        if(keys_[GLFW_KEY_SPACE])
+            ball->stuck_ = false;
     }
 }
 
@@ -100,6 +113,9 @@ void Game::Render(){
 
         // 绘制挡板
         paddle->Draw(*sprite_renderer);
+
+        // 绘制小球
+        ball->Draw(*sprite_renderer);
     }
 }
 
