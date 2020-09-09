@@ -4,7 +4,7 @@
 #include "../core/resource_manager.h"
 #include "../render/sprite_renderer.h"
 #include "../game/ball_object.h"
-#include "../utils/collision_detect.h"
+#include "../utils/collision.h"
 #include "../utils/rect.h"
 #include "../utils/circle.h"
 #include "GLFW/glfw3.h"
@@ -137,9 +137,33 @@ void Game::DoCollisions(){
     for(GameObject& box : levels_[level_].bricks_){
         if(!box.destroyed_){
             Rect box_rect(box.position_, box.size_);
-            if(CollisionDetect::Detect(ball_circle, box_rect)){
+            CollisionResult result = Collision::Detect(ball_circle, box_rect);
+            if(get<0>(result)){
+                // 非坚固砖块，销毁
                 if(!box.is_solid_)
                     box.destroyed_ = true;
+
+                // 碰撞处理
+                Direction dir = get<1>(result);
+                glm::vec2 difference = get<2>(result);
+                if(dir == kLeft || dir == kRight){  // 水平方向碰撞
+                    ball->velocity_.x = -ball->velocity_.x;  // 反转水平速度
+
+                    // 将小球移出砖块内
+                    float penetration = ball->radius_ - abs(difference.x);
+                    if(dir == kLeft)  // 在矩形右边碰撞，将球右移
+                        ball->position_.x += penetration;  
+                    else
+                        ball->position_.x -= penetration;
+                }else{
+                    ball->velocity_.y = -ball->velocity_.y;  // 反转垂直速度
+
+                    float penetration = ball->radius_ - abs(difference.y);
+                    if(dir == kUp)
+                        ball->position_.y -= penetration;
+                    else
+                        ball->position_.y += penetration;
+                }
             }
         }
     }
