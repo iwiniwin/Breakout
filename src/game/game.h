@@ -44,6 +44,10 @@ public:
 
     // 碰撞检测
     void DoCollisions();
+    // 重置关卡
+    void ResetLevel();
+    // 重置挡板
+    void ResetPaddle();
 };
 
 #endif

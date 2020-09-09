@@ -86,6 +86,11 @@ void Game::Update(float dt){
 
     // 碰撞检测
     DoCollisions();
+
+    if(ball->position_.y >= height_){  // 小球接触底部边界，游戏失败
+        ResetLevel();
+        ResetPaddle();
+    }
 }
 
 void Game::ProcessInput(float dt){
@@ -167,5 +172,40 @@ void Game::DoCollisions(){
             }
         }
     }
+
+    Rect paddle_rect(paddle->position_, paddle->size_);
+    CollisionResult result = Collision::Detect(ball_circle, paddle_rect);
+    if(!ball->stuck_ && get<0>(result)){
+        // 检查碰撞到了挡板的哪个位置，并根据位置来改变速度
+        // 小球圆心距离挡板中心越远，水平速度越大
+        float paddle_center = paddle->position_.x + paddle->size_.x / 2;
+        float distance = (ball->position_.x + ball->radius_) - paddle_center;
+        float percentage = distance / (paddle->size_.x / 2);
+
+        float strength = 2.0f;
+        glm::vec2 old_velocity = ball->velocity_;
+        ball->velocity_.x = kBallVelocity.x * percentage * strength;
+        // ball->velocity_.y = - ball->velocity_.y;
+        ball->velocity_.y = 1 - abs(ball->velocity_.y);
+        // 保证小球总的速度与力量是一致的
+        ball->velocity_ = glm::normalize(ball->velocity_) * glm::length(old_velocity);
+    }
+}
+
+void Game::ResetLevel(){
+    if(level_ == 0)
+        levels_[0].Load("resources/levels/one.lvl", width_, height_ * 0.5f);
+    else if(level_ == 1)
+        levels_[0].Load("resources/levels/two.lvl", width_, height_ * 0.5f);
+    else if(level_ == 2)
+        levels_[0].Load("resources/levels/three.lvl", width_, height_ * 0.5f);
+    else if(level_ == 3)
+        levels_[0].Load("resources/levels/four.lvl", width_, height_ * 0.5f);
+}
+
+void Game::ResetPaddle(){
+    paddle->size_ = kPaddleSize;
+    paddle->position_ = glm::vec2(width_ / 2 - kPaddleSize.x / 2, height_ - kPaddleSize.y);
+    ball->Reset(paddle->position_ + glm::vec2(kPaddleSize.x / 2 - kBallRadius, -kBallRadius * 2), kBallVelocity);
 }
 
