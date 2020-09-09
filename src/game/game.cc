@@ -1,9 +1,10 @@
 #include <iostream>
 
 #include "game.h"
-#include "resource_manager.h"
+#include "../core/resource_manager.h"
 #include "../render/sprite_renderer.h"
 #include "../game/ball_object.h"
+#include "../utils/collision_detect.h"
 #include "GLFW/glfw3.h"
 
 SpriteRenderer* sprite_renderer;
@@ -78,7 +79,11 @@ void Game::Init(){
 }
 
 void Game::Update(float dt){
+    // 移动小球
     ball->Move(dt, width_);
+
+    // 碰撞检测
+    DoCollisions();
 }
 
 void Game::ProcessInput(float dt){
@@ -122,6 +127,19 @@ void Game::Render(){
 
         // 绘制小球
         ball->Draw(*sprite_renderer);
+    }
+}
+
+void Game::DoCollisions(){
+    glm::vec4 ball_rect = glm::vec4(ball->position_, ball->position_.x + ball->size_.x, ball->position_.y + ball->size_.y);
+    for(GameObject& box : levels_[level_].bricks_){
+        if(!box.destroyed_){
+            glm::vec4 box_rect = glm::vec4(box.position_, box.position_.x + box.size_.x, box.position_.y + box.size_.y);
+            if(CollisionDetect::CheckAABB(ball_rect, box_rect)){
+                if(!box.is_solid_)
+                    box.destroyed_ = true;
+            }
+        }
     }
 }
 

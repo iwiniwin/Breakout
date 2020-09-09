@@ -3,7 +3,7 @@
 
 #include "../render/texture.h"
 #include "glm.hpp"
-#include "../core/game.h"
+#include "game.h"
 
 
 class BallObject : public GameObject

@@ -41,6 +41,9 @@ public:
     void Update(float dt);
     // 渲染
     void Render();
+
+    // 碰撞检测
+    void DoCollisions();
 };
 
 #endif

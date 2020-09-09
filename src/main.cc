@@ -2,7 +2,7 @@
 
 #include "glad/glad.h"
 #include "GLFW/glfw3.h"
-#include "core/game.h"
+#include "game/game.h"
 #include "core/resource_manager.h"
 
 using namespace std;
