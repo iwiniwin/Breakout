@@ -3,13 +3,16 @@
 
 
 #include "glm.hpp"
+#include "rect.h"
+#include "circle.h"
 
 class CollisionDetect
 {
 private:
     CollisionDetect() {};
 public:
-    static bool CheckAABB(glm::vec4 rect1, glm::vec4 rect2);
+    static bool Detect(Rect rect1, Rect rect2);
+    static bool Detect(Circle circle, Rect rect);
 };
 
 #endif

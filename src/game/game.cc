@@ -5,6 +5,8 @@
 #include "../render/sprite_renderer.h"
 #include "../game/ball_object.h"
 #include "../utils/collision_detect.h"
+#include "../utils/rect.h"
+#include "../utils/circle.h"
 #include "GLFW/glfw3.h"
 
 SpriteRenderer* sprite_renderer;
@@ -131,11 +133,11 @@ void Game::Render(){
 }
 
 void Game::DoCollisions(){
-    glm::vec4 ball_rect = glm::vec4(ball->position_, ball->position_.x + ball->size_.x, ball->position_.y + ball->size_.y);
+    Circle ball_circle(ball->position_, ball->radius_);
     for(GameObject& box : levels_[level_].bricks_){
         if(!box.destroyed_){
-            glm::vec4 box_rect = glm::vec4(box.position_, box.position_.x + box.size_.x, box.position_.y + box.size_.y);
-            if(CollisionDetect::CheckAABB(ball_rect, box_rect)){
+            Rect box_rect(box.position_, box.size_);
+            if(CollisionDetect::Detect(ball_circle, box_rect)){
                 if(!box.is_solid_)
                     box.destroyed_ = true;
             }
