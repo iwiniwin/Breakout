@@ -26,6 +26,9 @@ public:
 
     // 关卡是否通过（所有兼顾的瓷砖均被摧毁）
     bool IsCompleted();
+
+    // 重置关卡数据
+    void Reset();
 };
 
 

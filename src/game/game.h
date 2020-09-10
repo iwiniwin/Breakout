@@ -26,7 +26,7 @@ public:
     // 游戏中所有关卡
     vector<GameLevel> levels_;
     // 当前关卡
-    unsigned level_;
+    unsigned int level_;
 
     Game(unsigned int width, unsigned int height);
     ~Game();
@@ -44,10 +44,9 @@ public:
 
     // 碰撞检测
     void DoCollisions();
-    // 重置关卡
-    void ResetLevel();
-    // 重置挡板
-    void ResetPaddle();
+
+    // 重置游戏数据
+    void Reset();
 };
 
 #endif

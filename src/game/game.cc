@@ -88,8 +88,7 @@ void Game::Update(float dt){
     DoCollisions();
 
     if(ball->position_.y >= height_){  // 小球接触底部边界，游戏失败
-        ResetLevel();
-        ResetPaddle();
+        Reset();
     }
 }
 
@@ -192,20 +191,16 @@ void Game::DoCollisions(){
     }
 }
 
-void Game::ResetLevel(){
-    if(level_ == 0)
-        levels_[0].Load("resources/levels/one.lvl", width_, height_ * 0.5f);
-    else if(level_ == 1)
-        levels_[0].Load("resources/levels/two.lvl", width_, height_ * 0.5f);
-    else if(level_ == 2)
-        levels_[0].Load("resources/levels/three.lvl", width_, height_ * 0.5f);
-    else if(level_ == 3)
-        levels_[0].Load("resources/levels/four.lvl", width_, height_ * 0.5f);
-}
+void Game::Reset(){
+    // 重置关卡
+    for(unsigned int i = 0; i <= level_; i ++)
+        levels_[i].Reset();
 
-void Game::ResetPaddle(){
+    // 重置挡板
     paddle->size_ = kPaddleSize;
     paddle->position_ = glm::vec2(width_ / 2 - kPaddleSize.x / 2, height_ - kPaddleSize.y);
+
+    // 重置小球
     ball->Reset(paddle->position_ + glm::vec2(kPaddleSize.x / 2 - kBallRadius, -kBallRadius * 2), kBallVelocity);
 }
 

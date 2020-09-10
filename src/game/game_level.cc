@@ -75,3 +75,8 @@ void GameLevel::init(vector<vector<unsigned int>> tile_data, unsigned int level_
         }
     }
 }
+
+void GameLevel::Reset(){
+    for(GameObject& tile : bricks_)
+        tile.destroyed_ = false;
+}
