@@ -3,6 +3,7 @@
 #include "game.h"
 #include "../core/resource_manager.h"
 #include "../render/sprite_renderer.h"
+#include "../render/particle.h"
 #include "../game/ball_object.h"
 #include "../utils/collision.h"
 #include "../utils/rect.h"
@@ -10,6 +11,7 @@
 #include "GLFW/glfw3.h"
 
 SpriteRenderer* sprite_renderer;
+ParticleGenerator* particle_generator;
 
 // 挡板大小
 const glm::vec2 kPaddleSize(100, 20);
@@ -42,7 +44,7 @@ void Game::Init(){
     shader.Use().SetInteger("image", 0);
     shader.SetMatrix4("projection", projection);
 
-    sprite_renderer = new SpriteRenderer(shader);
+    ResourceManager::LoadShader("resources/shaders/particle.vs", "resources/shaders/particle.frag", nullptr, "particle");
 
     // 加载纹理
     ResourceManager::LoadTexture("resources/textures/background.jpg", false, "background");
@@ -50,6 +52,10 @@ void Game::Init(){
     ResourceManager::LoadTexture("resources/textures/block_solid.png", false, "block_solid");
     ResourceManager::LoadTexture("resources/textures/block.png", false, "block");
     ResourceManager::LoadTexture("resources/textures/paddle.png", true, "paddle");
+    ResourceManager::LoadTexture("resources/textures/particle.png", true, "particle");
+
+    sprite_renderer = new SpriteRenderer(shader);
+    particle_generator = new ParticleGenerator(ResourceManager::GetShader("particle"), ResourceManager::GetTexture("particle"), 500);
 
     // 加载关卡
     GameLevel one;
@@ -83,6 +89,8 @@ void Game::Init(){
 void Game::Update(float dt){
     // 移动小球
     ball->Move(dt, width_);
+
+    particle_generator->Update(dt, *ball, 2, glm::vec2(ball->radius_ / 2));
 
     // 碰撞检测
     DoCollisions();
@@ -130,6 +138,9 @@ void Game::Render(){
 
         // 绘制挡板
         paddle->Draw(*sprite_renderer);
+
+        // 绘制粒子
+        particle_generator->Draw();  // 保证粒子绘制在其他物体之前，小球之后
 
         // 绘制小球
         ball->Draw(*sprite_renderer);
