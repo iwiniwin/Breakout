@@ -5,7 +5,7 @@ out vec2 TexCoords;
 out vec4 ParticleColor;
 
 uniform mat4 projection;
-uniform mat4 offset;
+uniform vec2 offset;
 uniform vec4 color;
 
 void main(){

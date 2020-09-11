@@ -40,11 +40,13 @@ void Game::Init(){
     // 即左上角坐标为(0, 0)，右下角坐标为(width_, height_)
     glm::mat4 projection = glm::ortho(0.0f, static_cast<float>(width_), static_cast<float>(height_), 0.0f, -1.0f, 1.0f);
 
-    Shader shader = ResourceManager::LoadShader("resources/shaders/sprite.vs", "resources/shaders/sprite.frag", nullptr, "sprite");
-    shader.Use().SetInteger("image", 0);
-    shader.SetMatrix4("projection", projection);
+    Shader sprite_shader = ResourceManager::LoadShader("resources/shaders/sprite.vs", "resources/shaders/sprite.frag", nullptr, "sprite");
+    sprite_shader.Use().SetInteger("image", 0);
+    sprite_shader.SetMatrix4("projection", projection);
 
-    ResourceManager::LoadShader("resources/shaders/particle.vs", "resources/shaders/particle.frag", nullptr, "particle");
+    Shader particle_shader = ResourceManager::LoadShader("resources/shaders/particle.vs", "resources/shaders/particle.frag", nullptr, "particle");
+    particle_shader.Use().SetInteger("sprite", 0);
+    particle_shader.SetMatrix4("projection", projection);
 
     // 加载纹理
     ResourceManager::LoadTexture("resources/textures/background.jpg", false, "background");
@@ -54,8 +56,8 @@ void Game::Init(){
     ResourceManager::LoadTexture("resources/textures/paddle.png", true, "paddle");
     ResourceManager::LoadTexture("resources/textures/particle.png", true, "particle");
 
-    sprite_renderer = new SpriteRenderer(shader);
-    particle_generator = new ParticleGenerator(ResourceManager::GetShader("particle"), ResourceManager::GetTexture("particle"), 500);
+    sprite_renderer = new SpriteRenderer(sprite_shader);
+    particle_generator = new ParticleGenerator(particle_shader, ResourceManager::GetTexture("particle"), 500);
 
     // 加载关卡
     GameLevel one;

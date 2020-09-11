@@ -15,9 +15,9 @@ void ParticleGenerator::Update(float dt, GameObject& object, unsigned int new_pa
 
     for(unsigned int i = 0; i < amount_; i ++){
         Particle& p = particles_[i];
-        p.life_ -= dt;
+        p.life_ -= dt;  // 减少粒子生命值
         if(p.life_ > 0.0f){  // 如果粒子还存活
-            p.position_ -= p.velocity_ * dt;  // 减少粒子生命值
+            p.position_ -= p.velocity_ * dt;  // 移动粒子
             p.color_.a -= dt * 2.5;  // 粒子逐渐变透明
         }
     }
