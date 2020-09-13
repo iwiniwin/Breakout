@@ -1,4 +1,5 @@
 #include <iostream>
+#include <algorithm>
 
 #include "game.h"
 #include "../core/resource_manager.h"
@@ -63,6 +64,13 @@ void Game::Init(){
     ResourceManager::LoadTexture("resources/textures/paddle.png", true, "paddle");
     ResourceManager::LoadTexture("resources/textures/particle.png", true, "particle");
 
+    ResourceManager::LoadTexture("resources/textures/powerup_speed.png", true, "powerup_speed");
+    ResourceManager::LoadTexture("resources/textures/powerup_sticky.png", true, "powerup_sticky");
+    ResourceManager::LoadTexture("resources/textures/powerup_increase.png", true, "powerup_increase");
+    ResourceManager::LoadTexture("resources/textures/powerup_confuse.png", true, "powerup_confuse");
+    ResourceManager::LoadTexture("resources/textures/powerup_chaos.png", true, "powerup_chaos");
+    ResourceManager::LoadTexture("resources/textures/powerup_passthrough.png", true, "powerup_passthrough");
+
     sprite_renderer = new SpriteRenderer(sprite_shader);
     particle_generator = new ParticleGenerator(particle_shader, ResourceManager::GetTexture("particle"), 500);
     post_processor = new PostProcessor(postprocessing_shader, width_, height_);
@@ -104,6 +112,8 @@ void Game::Update(float dt){
 
     // 碰撞检测
     DoCollisions();
+
+    UpdatePowerUps(dt);
 
     if(ball->position_.y >= height_){  // 小球接触底部边界，游戏失败
         Reset();
@@ -158,6 +168,11 @@ void Game::Render(){
         // 绘制挡板
         paddle->Draw(*sprite_renderer);
 
+        // 绘制道具
+        for(PowerUp& power_up : power_ups_)
+            if(!power_up.destroyed_)
+                power_up.Draw(*sprite_renderer);
+
         // 绘制粒子
         particle_generator->Draw();  // 保证粒子绘制在其他物体之前，小球之后
 
@@ -170,6 +185,26 @@ void Game::Render(){
     }
 }
 
+// 激活道具效果
+void ActivatePowerUp(PowerUp& power_up){
+    if(power_up.type_ == "speed"){
+        ball->velocity_ *= 1.2;
+    }else if(power_up.type_ == "sticky"){
+        ball->sticky_ = true;
+        paddle->color_ = glm::vec3(1.0f, 0.5f, 1.0f);
+    }else if(power_up.type_ == "pass-through"){
+        ball->pass_through_ = true;
+        ball->color_ = glm::vec3(1.0f, 0.5f, 0.5f);
+    }else if(power_up.type_ == "pad-size-increase"){
+        paddle->size_.x += 50;
+    }else if(power_up.type_ == "confuse"){
+        if(!post_processor->chaos_)
+            post_processor->confuse_ = true; 
+    }else if(power_up.type_ == "chaos"){
+        if(!post_processor->confuse_)
+            post_processor->chaos_ = true;
+    }
+}
 
 void Game::DoCollisions(){
     Circle ball_circle(ball->position_, ball->radius_);
@@ -179,40 +214,58 @@ void Game::DoCollisions(){
             CollisionResult result = Collision::Detect(ball_circle, box_rect);
             if(get<0>(result)){
                 // 非坚固砖块，销毁
-                if(!box.is_solid_)
+                if(!box.is_solid_){
                     box.destroyed_ = true;
-                else{  
+                    SpawnPowerUps(box);
+                }else{  
                     // 坚固砖块触发shake特效
                     shake_time = 0.05f;
                     post_processor->shake_ = true;
                 }
 
                 // 碰撞处理
-                Direction dir = get<1>(result);
-                glm::vec2 difference = get<2>(result);
-                if(dir == kLeft || dir == kRight){  // 水平方向碰撞
-                    ball->velocity_.x = -ball->velocity_.x;  // 反转水平速度
+                if(!(ball->pass_through_ && !box.is_solid_)){  // 如果有pass_through道具效果，则不再对非坚固物体产生碰撞
+                    Direction dir = get<1>(result);
+                    glm::vec2 difference = get<2>(result);
+                    if(dir == kLeft || dir == kRight){  // 水平方向碰撞
+                        ball->velocity_.x = -ball->velocity_.x;  // 反转水平速度
 
-                    // 将小球移出砖块内
-                    float penetration = ball->radius_ - abs(difference.x);
-                    if(dir == kLeft)  // 在矩形右边碰撞，将球右移
-                        ball->position_.x += penetration;  
-                    else
-                        ball->position_.x -= penetration;
-                }else{
-                    ball->velocity_.y = -ball->velocity_.y;  // 反转垂直速度
+                        // 将小球移出砖块内
+                        float penetration = ball->radius_ - abs(difference.x);
+                        if(dir == kLeft)  // 在矩形右边碰撞，将球右移
+                            ball->position_.x += penetration;  
+                        else
+                            ball->position_.x -= penetration;
+                    }else{
+                        ball->velocity_.y = -ball->velocity_.y;  // 反转垂直速度
 
-                    float penetration = ball->radius_ - abs(difference.y);
-                    if(dir == kUp)
-                        ball->position_.y -= penetration;
-                    else
-                        ball->position_.y += penetration;
+                        float penetration = ball->radius_ - abs(difference.y);
+                        if(dir == kUp)
+                            ball->position_.y -= penetration;
+                        else
+                            ball->position_.y += penetration;
+                    }
                 }
             }
         }
     }
 
     Rect paddle_rect(paddle->position_, paddle->size_);
+
+    for(PowerUp& power_up : power_ups_){
+        if(!power_up.destroyed_){
+            if(power_up.position_.x >= this->height_)
+                power_up.destroyed_ = true;
+            Rect power_up_rect(power_up.position_, power_up.size_);
+            if(Collision::Detect(paddle_rect, power_up_rect)){
+                // 挡板碰到道具，激活道具
+                ActivatePowerUp(power_up);
+                power_up.destroyed_ = true;
+                power_up.activated_ = true;
+            }
+        }
+    }
+
     CollisionResult result = Collision::Detect(ball_circle, paddle_rect);
     if(!ball->stuck_ && get<0>(result)){
         // 检查碰撞到了挡板的哪个位置，并根据位置来改变速度
@@ -228,6 +281,8 @@ void Game::DoCollisions(){
         ball->velocity_.y = 1 - abs(ball->velocity_.y);
         // 保证小球总的速度与力量是一致的
         ball->velocity_ = glm::normalize(ball->velocity_) * glm::length(old_velocity);
+
+        ball->stuck_ = ball->sticky_;  // 小球和挡板碰撞后，如果有卡住的道具效果，则应用
     }
 }
 
@@ -239,8 +294,88 @@ void Game::Reset(){
     // 重置挡板
     paddle->size_ = kPaddleSize;
     paddle->position_ = glm::vec2(width_ / 2 - kPaddleSize.x / 2, height_ - kPaddleSize.y);
+    paddle->color_ = glm::vec3(1.0f);
 
     // 重置小球
     ball->Reset(paddle->position_ + glm::vec2(kPaddleSize.x / 2 - kBallRadius, -kBallRadius * 2), kBallVelocity);
+
+    // 重置特效
+    post_processor->chaos_ = false;
+    post_processor->confuse_ = false;
+
+    // 重置道具
+    power_ups_.clear();
+}
+
+bool shouldSpawn(unsigned int chance){
+    unsigned int random = rand() % chance;  // 产生一个0到chance - 1的整数
+    return random == 0;
+}
+
+void Game::SpawnPowerUps(GameObject &block){
+
+    // 正面道具，出现概率 1/75
+
+    if(shouldSpawn(75))
+        power_ups_.push_back(PowerUp("speed", glm::vec3(0.5f, 0.5f, 1.0f), 0.0f, block.position_, ResourceManager::GetTexture("powerup_speed")));
+    if(shouldSpawn(75))
+        power_ups_.push_back(PowerUp("sticky", glm::vec3(1.0f, 0.5f, 1.0f), 20.0f, block.position_, ResourceManager::GetTexture("powerup_sticky")));
+    if(shouldSpawn(75))
+        power_ups_.push_back(PowerUp("pass-through", glm::vec3(0.5f, 1.0f, 0.5f), 10.0f, block.position_, ResourceManager::GetTexture("powerup_passthrough")));
+    if(shouldSpawn(75))
+        power_ups_.push_back(PowerUp("pad-size-increase", glm::vec3(1.0f, 0.6f, 0.4f), 0.0f, block.position_, ResourceManager::GetTexture("powerup_increase")));
+
+    // 负面道具，出现概率 1/15
+
+    if(shouldSpawn(15))
+        power_ups_.push_back(PowerUp("confuse", glm::vec3(1.0f, 0.3f, 0.3f), 15.0f, block.position_, ResourceManager::GetTexture("powerup_confuse")));
+    if(shouldSpawn(15))
+        power_ups_.push_back(PowerUp("chaos", glm::vec3(0.9f, 0.25f, 0.25f), 15.0f, block.position_, ResourceManager::GetTexture("powerup_chaos")));
+}
+
+// 检查是否有其他道具激活了指定的效果
+bool isOtherPowerUpActive(vector<PowerUp>& power_ups, string type){
+    for(const PowerUp& power_up : power_ups){
+        if(power_up.activated_)
+            if(power_up.type_ == type)
+                return true;
+    }
+    return false;
+}
+
+void Game::UpdatePowerUps(float dt){
+    for(PowerUp& power_up : power_ups_){
+        power_up.position_ += power_up.velocity_ * dt;
+        if(power_up.activated_){
+            power_up.duration_ -= dt;
+            if(power_up.duration_ <= 0.0f){
+                power_up.activated_ = false;
+                // 停用道具效果
+                if(power_up.type_ == "sticky"){
+                    if(!isOtherPowerUpActive(power_ups_, "sticky")){
+                        ball->sticky_ = false;
+                        paddle->color_ = glm::vec3(1.0f);
+                    }
+                }else if(power_up.type_ == "pass-through"){
+                    if(!isOtherPowerUpActive(power_ups_, "pass-through")){
+                        ball->pass_through_ = false;
+                        ball->color_ = glm::vec3(1.0f);
+                    }
+                }else if(power_up.type_ == "confuse"){
+                    if(!isOtherPowerUpActive(power_ups_, "confuse"))
+                        post_processor->confuse_ = false;
+                }else if(power_up.type_ == "chaos"){
+                    if(!isOtherPowerUpActive(power_ups_, "chaos"))
+                        post_processor->chaos_ = false;
+                }
+            }
+        }
+    }
+    power_ups_.erase(
+        std::remove_if(power_ups_.begin(), power_ups_.end(), [](const PowerUp& power_up) {
+            return power_up.destroyed_ && !power_up.activated_;
+        }), 
+        power_ups_.end()
+    );
 }
 

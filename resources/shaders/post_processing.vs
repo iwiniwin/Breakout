@@ -13,7 +13,7 @@ void main(){
     TexCoords = vertex.zw;
 
     if(chaos){  // 圆形旋转
-        float strength = 0.;
+        float strength = 0.3;
         TexCoords = vec2(TexCoords.x + sin(time) * strength, TexCoords.y + cos(time) * strength);
     }else if(confuse){  // 反转坐标
         TexCoords = vec2(1.0 - TexCoords.x, 1.0 - TexCoords.y);

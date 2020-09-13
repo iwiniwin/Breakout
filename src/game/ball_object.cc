@@ -1,10 +1,10 @@
 #include "ball_object.h"
 
 BallObject::BallObject()
-    : GameObject(), radius_(12.5f), stuck_(true) {}
+    : GameObject(), radius_(12.5f), stuck_(true), sticky_(false), pass_through_(false) {}
 
 BallObject::BallObject(glm::vec2 pos, float radius, glm::vec2 velocity, Texture2D sprite)
-    : GameObject(pos, glm::vec2(radius * 2, radius * 2), sprite, glm::vec3(1.0f), velocity), radius_(radius), stuck_(true) {}
+    : GameObject(pos, glm::vec2(radius * 2, radius * 2), sprite, glm::vec3(1.0f), velocity), radius_(radius), stuck_(true), sticky_(false), pass_through_(false) {}
 
 glm::vec2 BallObject::Move(float dt, unsigned int window_width){
     if(!stuck_){
@@ -31,4 +31,7 @@ void BallObject::Reset(glm::vec2 position, glm::vec2 velocity){
     position_ = position;
     velocity_ = velocity;
     stuck_ = true;
+    sticky_ = false;
+    pass_through_ = false;
+    color_ = glm::vec3(1.0f);
 }

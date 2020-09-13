@@ -15,7 +15,7 @@ private:
     void initRenderData();
 public:
     Shader shader_;
-    Texture2D texture_;
+    Texture2D texture_;  // 帧缓冲的颜色附件
     unsigned int width_, height_;
     bool confuse_, chaos_, shake_;
 

@@ -14,6 +14,9 @@ public:
     // 是否卡住，是否可以移动
     bool stuck_;
 
+    bool sticky_;  // 道具效果，是否卡住
+    bool pass_through_;  // 道具效果，是否可穿透坚固物体
+
     BallObject(/* args */);
     BallObject(glm::vec2 pos, float radius, glm::vec2 velocity, Texture2D sprite);
 

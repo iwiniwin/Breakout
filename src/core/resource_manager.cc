@@ -84,7 +84,11 @@ Texture2D ResourceManager::loadTextureFromFile(const char* file, bool alpha){
     // 加载图片
     int width, height, nr_components;
     unsigned char* image = stbi_load(file, &width, &height, &nr_components, 0);
-    texture.Generate(width, height, image);
-    stbi_image_free(image);
+    if(image){
+        texture.Generate(width, height, image);
+        stbi_image_free(image);
+    }else{
+        cout << "ERROR::LOADTEXTURE: Failed to load texture from file : \n" << file << endl;
+    }
     return texture;
 }

@@ -46,13 +46,13 @@ PostProcessor::PostProcessor(Shader shader, unsigned int width, unsigned int hei
         -1,  8, -1,
         -1, -1, -1
     };
-    glUniform1iv(glGetUniformLocation(shader.id_, "edge_kernel"), 9, edge_kernel);
+    glUniform1iv(glGetUniformLocation(shader_.id_, "edge_kernel"), 9, edge_kernel);
     float blur_kernel[9] = {
         1.0 / 16, 2.0 / 16, 1.0 / 16,
         2.0 / 16, 4.0 / 16, 2.0 / 16,
         1.0 / 16, 2.0 / 16, 1.0 / 16,
     };  
-    glUniform1fv(glGetUniformLocation(shader.id_, "blur_kernel"), 9, blur_kernel);
+    glUniform1fv(glGetUniformLocation(shader_.id_, "blur_kernel"), 9, blur_kernel);
 }
 
 void PostProcessor::BeginRender(){

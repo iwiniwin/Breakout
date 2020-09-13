@@ -4,7 +4,8 @@
 #include <vector>
 using namespace std;
 
-#include "../game/game_level.h"
+#include "game_level.h"
+#include "power_up.h"
 
 // 当前的游戏状态
 enum GameState {
@@ -28,6 +29,9 @@ public:
     // 当前关卡
     unsigned int level_;
 
+    // 所有道具
+    vector<PowerUp> power_ups_;
+
     Game(unsigned int width, unsigned int height);
     ~Game();
     // 初始化游戏状态（加载所有的着色器/纹理/关卡）
@@ -47,6 +51,11 @@ public:
 
     // 重置游戏数据
     void Reset();
+
+    // 在给定的一个砖块位置生成道具
+    void SpawnPowerUps(GameObject &block);
+    // 更新所有被激活的道具
+    void UpdatePowerUps(float dt);
 };
 
 #endif
