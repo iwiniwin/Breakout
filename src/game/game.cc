@@ -4,6 +4,7 @@
 #include "../core/resource_manager.h"
 #include "../render/sprite_renderer.h"
 #include "../render/particle.h"
+#include "../render/post_processor.h"
 #include "../game/ball_object.h"
 #include "../utils/collision.h"
 #include "../utils/rect.h"
@@ -12,6 +13,7 @@
 
 SpriteRenderer* sprite_renderer;
 ParticleGenerator* particle_generator;
+PostProcessor* post_processor;
 
 // 挡板大小
 const glm::vec2 kPaddleSize(100, 20);
@@ -24,6 +26,9 @@ const glm::vec2 kBallVelocity(100.0f, -350.0f);
 // 球的半径
 const float kBallRadius = 12.5f;
 BallObject *ball;
+
+// shake特效持续时间
+float shake_time = 0;
 
 Game::Game(unsigned int width, unsigned int height){
     width_ = width;
@@ -48,6 +53,8 @@ void Game::Init(){
     particle_shader.Use().SetInteger("sprite", 0);
     particle_shader.SetMatrix4("projection", projection);
 
+    Shader postprocessing_shader = ResourceManager::LoadShader("resources/shaders/post_processing.vs", "resources/shaders/post_processing.frag", nullptr, "postprocessing");
+
     // 加载纹理
     ResourceManager::LoadTexture("resources/textures/background.jpg", false, "background");
     ResourceManager::LoadTexture("resources/textures/awesomeface.png", true, "ball");
@@ -58,6 +65,7 @@ void Game::Init(){
 
     sprite_renderer = new SpriteRenderer(sprite_shader);
     particle_generator = new ParticleGenerator(particle_shader, ResourceManager::GetTexture("particle"), 500);
+    post_processor = new PostProcessor(postprocessing_shader, width_, height_);
 
     // 加载关卡
     GameLevel one;
@@ -100,6 +108,12 @@ void Game::Update(float dt){
     if(ball->position_.y >= height_){  // 小球接触底部边界，游戏失败
         Reset();
     }
+
+    if(shake_time > 0.0f){
+        shake_time -= dt;
+        if(shake_time <= 0.0f)
+            post_processor->shake_ = false;
+    }
 }
 
 void Game::ProcessInput(float dt){
@@ -131,6 +145,9 @@ void Game::ProcessInput(float dt){
 
 void Game::Render(){
     if(state_ == KGameActive){
+
+        post_processor->BeginRender();
+
         // 绘制背景
         Texture2D texture = ResourceManager::GetTexture("background");
         sprite_renderer->DrawSprite(texture, glm::vec2(0, 0), glm::vec2(width_, height_), 0.0f);
@@ -146,8 +163,13 @@ void Game::Render(){
 
         // 绘制小球
         ball->Draw(*sprite_renderer);
+
+        post_processor->EndRender();
+
+        post_processor->Render(glfwGetTime());
     }
 }
+
 
 void Game::DoCollisions(){
     Circle ball_circle(ball->position_, ball->radius_);
@@ -159,6 +181,11 @@ void Game::DoCollisions(){
                 // 非坚固砖块，销毁
                 if(!box.is_solid_)
                     box.destroyed_ = true;
+                else{  
+                    // 坚固砖块触发shake特效
+                    shake_time = 0.05f;
+                    post_processor->shake_ = true;
+                }
 
                 // 碰撞处理
                 Direction dir = get<1>(result);

@@ -47,4 +47,62 @@ PostProcessor::PostProcessor(Shader shader, unsigned int width, unsigned int hei
         -1, -1, -1
     };
     glUniform1iv(glGetUniformLocation(shader.id_, "edge_kernel"), 9, edge_kernel);
+    float blur_kernel[9] = {
+        1.0 / 16, 2.0 / 16, 1.0 / 16,
+        2.0 / 16, 4.0 / 16, 2.0 / 16,
+        1.0 / 16, 2.0 / 16, 1.0 / 16,
+    };  
+    glUniform1fv(glGetUniformLocation(shader.id_, "blur_kernel"), 9, blur_kernel);
+}
+
+void PostProcessor::BeginRender(){
+    glBindFramebuffer(GL_FRAMEBUFFER, ms_fbo_);
+    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+    glClear(GL_COLOR_BUFFER_BIT);
+}
+
+void PostProcessor::EndRender(){
+    glBindFramebuffer(GL_READ_BUFFER, ms_fbo_);
+    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, fbo_);
+    glBlitFramebuffer(0, 0, width_, height_, 0, 0, width_, height_, GL_COLOR_BUFFER_BIT, GL_NEAREST);
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+}
+
+void PostProcessor::Render(float time){
+    shader_.Use();
+    shader_.SetFloat("time", time);
+    shader_.SetInteger("confuse", confuse_);
+    shader_.SetInteger("chaos", chaos_);
+    shader_.SetInteger("shake", shake_);
+
+    glActiveTexture(GL_TEXTURE0);
+    texture_.Bind();
+    glBindVertexArray(vao_);
+    glDrawArrays(GL_TRIANGLES, 0, 6);
+    glBindVertexArray(0);
+}
+
+void PostProcessor::initRenderData(){
+    unsigned int vbo;
+    float vertices[] = {
+        // Pos        // Tex
+        -1.0f, -1.0f, 0.0f, 0.0f,
+         1.0f,  1.0f, 1.0f, 1.0f,
+        -1.0f,  1.0f, 0.0f, 1.0f,
+
+        -1.0f, -1.0f, 0.0f, 0.0f,
+         1.0f, -1.0f, 1.0f, 0.0f,
+         1.0f,  1.0f, 1.0f, 1.0f
+    };
+    glGenVertexArrays(1, &vao_);
+    glGenBuffers(1, &vbo);
+
+    glBindBuffer(GL_ARRAY_BUFFER, vbo);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+
+    glBindVertexArray(vao_);
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)0);
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    glBindVertexArray(vao_);
 }

@@ -13,12 +13,12 @@ uniform bool confuse;
 uniform bool shake;
 
 void main(){
-    color = vec4(0.0f);
+    FragColor = vec4(0.0f);
     vec3 sample[9];
     if(chaos || shake)
         // 为使用卷积核采样周边像素
         for(int i = 0; i < 9; i ++)
-            sample[i] = vec3(texture(scene, TexCoords + offset[i]))
+            sample[i] = vec3(texture(scene, TexCoords + offset[i]));
 
     if(chaos){
         // 应用边缘检测核
