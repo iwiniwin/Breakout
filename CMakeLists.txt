@@ -15,7 +15,12 @@ configure_file (
     "${PROJECT_SOURCE_DIR}/${PROJECT_NAME}Config.h"
 )
 
-set (3RD_DIR 3rd)
+set (3RD_DIR ${PROJECT_SOURCE_DIR}/3rd)
+set(CMAKE_MODULE_PATH ${3RD_DIR})
+
+# IrrKlang
+find_package (IrrKlang REQUIRED)
+include_directories (${IRRKLANG_INCLUDE_DIR})
 
 # glfw
 set (GLFW_DIR ${3RD_DIR}/glfw)
@@ -62,7 +67,7 @@ add_executable (${PROJECT_NAME} ${SOURCE_FILES})
 # )
 
 # 添加链接库
-target_link_libraries (${PROJECT_NAME} glfw glad freetype stb_image)
+target_link_libraries (${PROJECT_NAME} glfw glad freetype stb_image ${IRRKLANG_LIBRARY})
 
 # target_compile_definitions(${PROJECT_NAME} PRIVATE GLFW_INCLUDE_NONE)
 
@@ -72,3 +77,14 @@ add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
     ${CMAKE_SOURCE_DIR}/resources
     $<TARGET_FILE_DIR:${PROJECT_NAME}>/resources
 )
+
+# 复制库到工作目录
+if(WIN32)
+    if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC" OR "${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
+        add_custom_command(TARGET ${PROJECT_NAME} PRE_BUILD
+            COMMAND ${CMAKE_COMMAND} -E copy_directory
+            ${IRRKLANG_LIB_DIR}
+            $<TARGET_FILE_DIR:${PROJECT_NAME}>
+        )
+    endif()
+endif(WIN32)
