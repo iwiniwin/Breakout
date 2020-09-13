@@ -11,10 +11,13 @@
 #include "../utils/rect.h"
 #include "../utils/circle.h"
 #include "GLFW/glfw3.h"
+#include "irrKlang.h"
+using namespace irrklang;
 
 SpriteRenderer* sprite_renderer;
 ParticleGenerator* particle_generator;
 PostProcessor* post_processor;
+ISoundEngine* sound_engine = createIrrKlangDevice();
 
 // 挡板大小
 const glm::vec2 kPaddleSize(100, 20);
@@ -38,6 +41,11 @@ Game::Game(unsigned int width, unsigned int height){
 
 Game::~Game(){
     delete(sprite_renderer);
+    delete(particle_generator);
+    delete(post_processor);
+    delete(ball);
+    delete(paddle);
+    sound_engine->drop();
 }
 
 void Game::Init(){
@@ -102,6 +110,8 @@ void Game::Init(){
     // 初始化小球
     glm::vec2 ball_pos = paddle_pos + glm::vec2(kPaddleSize.x / 2 - kBallRadius, -kBallRadius * 2);
     ball = new BallObject(ball_pos, kBallRadius, kBallVelocity, ResourceManager::GetTexture("ball"));
+
+    sound_engine->play2D("resources/audio/breakout.mp3", true);
 }
 
 void Game::Update(float dt){
@@ -219,10 +229,12 @@ void Game::DoCollisions(){
                 if(!box.is_solid_){
                     box.destroyed_ = true;
                     SpawnPowerUps(box);
+                    sound_engine->play2D("resources/audio/bleep.mp3", false);
                 }else{  
                     // 坚固砖块触发shake特效
                     shake_time = 0.05f;
                     post_processor->shake_ = true;
+                    sound_engine->play2D("resources/audio/solid.wav", false);
                 }
 
                 // 碰撞处理
@@ -264,6 +276,7 @@ void Game::DoCollisions(){
                 ActivatePowerUp(power_up);
                 power_up.destroyed_ = true;
                 power_up.activated_ = true;
+                sound_engine->play2D("resources/audio/powerup.wav", false);
             }
         }
     }
@@ -285,6 +298,7 @@ void Game::DoCollisions(){
         ball->velocity_ = glm::normalize(ball->velocity_) * glm::length(old_velocity);
 
         ball->stuck_ = ball->sticky_;  // 小球和挡板碰撞后，如果有卡住的道具效果，则应用
+        sound_engine->play2D("resources/audio/bleep.wav", false);
     }
 }
 

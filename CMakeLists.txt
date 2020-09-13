@@ -83,7 +83,7 @@ if(WIN32)
     if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC" OR "${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
         add_custom_command(TARGET ${PROJECT_NAME} PRE_BUILD
             COMMAND ${CMAKE_COMMAND} -E copy_directory
-            ${IRRKLANG_LIB_DIR}
+            ${IRRKLANG_BIN_DIR}
             $<TARGET_FILE_DIR:${PROJECT_NAME}>
         )
     endif()
