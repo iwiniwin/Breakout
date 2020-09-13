@@ -131,20 +131,22 @@ void Game::ProcessInput(float dt){
         float velocity = kPaddleVelocity * dt;
         // 移动挡板
         if(keys_[GLFW_KEY_A]){
+            float x = paddle->position_.x;
             paddle->position_.x -= velocity;
             if(paddle->position_.x < 0)
                 paddle->position_.x = 0;
             if(ball->stuck_){
-                ball->position_ = paddle->position_ + glm::vec2(kPaddleSize.x / 2 - kBallRadius, -kBallRadius * 2);
+                ball->position_.x += paddle->position_.x - x;
             }
         }
             
         if(keys_[GLFW_KEY_D]){
+            float x = paddle->position_.x;
             paddle->position_.x += velocity;
             if(paddle->position_.x > width_ - paddle->size_.x)
                 paddle->position_.x = width_ - paddle->size_.x;
             if(ball->stuck_){
-                ball->position_ = paddle->position_ + glm::vec2(kPaddleSize.x / 2 - kBallRadius, -kBallRadius * 2);
+                ball->position_.x += paddle->position_.x - x;
             }
         }
             
