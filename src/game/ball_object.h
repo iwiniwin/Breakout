@@ -18,7 +18,7 @@ public:
     bool pass_through_;  // 道具效果，是否可穿透坚固物体
 
     BallObject(/* args */);
-    BallObject(glm::vec2 pos, float radius, glm::vec2 velocity, Texture2D sprite);
+    BallObject(glm::vec2 pos, float radius, glm::vec2 velocity, Texture2D sprite, glm::vec3 color);
 
     // 根据球的速度移动球
     glm::vec2 Move(float dt, unsigned int window_width);

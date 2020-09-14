@@ -31,7 +31,9 @@ GameObject* paddle;
 // 球的速度
 const glm::vec2 kBallVelocity(100.0f, -350.0f);
 // 球的半径
-const float kBallRadius = 12.5f;
+const float kBallRadius = 13.5f;
+// 球的颜色
+const glm::vec3 kBallColor(135/255.0f, 206/255.0f, 245/255.0f);
 BallObject *ball;
 
 // shake特效持续时间
@@ -71,7 +73,7 @@ void Game::Init(){
 
     // 加载纹理
     ResourceManager::LoadTexture("resources/textures/background.jpg", false, "background");
-    ResourceManager::LoadTexture("resources/textures/awesomeface.png", true, "ball");
+    ResourceManager::LoadTexture("resources/textures/ball.png", true, "ball");
     ResourceManager::LoadTexture("resources/textures/block_solid.png", false, "block_solid");
     ResourceManager::LoadTexture("resources/textures/block.png", false, "block");
     ResourceManager::LoadTexture("resources/textures/paddle.png", true, "paddle");
@@ -118,7 +120,7 @@ void Game::Init(){
 
     // 初始化小球
     glm::vec2 ball_pos = paddle_pos + glm::vec2(kPaddleSize.x / 2 - kBallRadius, -kBallRadius * 2);
-    ball = new BallObject(ball_pos, kBallRadius, kBallVelocity, ResourceManager::GetTexture("ball"));
+    ball = new BallObject(ball_pos, kBallRadius, kBallVelocity, ResourceManager::GetTexture("ball"), kBallColor);
 
     // 播放背景音乐
     sound_engine->play2D("resources/audio/breakout.mp3", true);
