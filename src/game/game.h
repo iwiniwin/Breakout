@@ -38,6 +38,12 @@ public:
     // 玩家生命值
     unsigned int life_;
 
+    // 是否开启调试模式
+    bool debug_;
+
+    // 帧率（调试模式下显示）
+    float fps_;
+
     Game(unsigned int width, unsigned int height);
     ~Game();
     // 初始化游戏状态（加载所有的着色器/纹理/关卡）

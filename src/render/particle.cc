@@ -52,7 +52,7 @@ void ParticleGenerator::respawnParticle(Particle& particle, GameObject& object, 
     float r_color = 0.5 + ((rand() % 100) / 100.0f);  // 随机生成一个大于0.5的颜色值
     particle.position_ = object.position_ + random + offset;
     particle.color_ = glm::vec4(r_color, r_color, r_color, 1.0f);
-    particle.life_ = 1.0f;
+    particle.life_ = 0.8f;
     particle.velocity_ = object.velocity_ * 0.1f;
 }
 

@@ -3,6 +3,7 @@
 #include <sstream>
 
 #include "game.h"
+#include "../core/fps.h"
 #include "../core/resource_manager.h"
 #include "../render/sprite_renderer.h"
 #include "../render/particle.h"
@@ -87,7 +88,7 @@ void Game::Init(){
     ResourceManager::LoadTexture("resources/textures/powerup_passthrough.png", true, "powerup_passthrough");
 
     sprite_renderer = new SpriteRenderer(sprite_shader);
-    particle_generator = new ParticleGenerator(particle_shader, ResourceManager::GetTexture("particle"), 500);
+    particle_generator = new ParticleGenerator(particle_shader, ResourceManager::GetTexture("particle"), 800);
     post_processor = new PostProcessor(postprocessing_shader, width_, height_);
     text_renderer = new TextRenderer(text_shader, width_, height_);
 
@@ -156,6 +157,10 @@ void Game::Update(float dt){
         post_processor->chaos_ = true;
         state_ = kGameWin;
     }
+
+    if(debug_){
+        fps_ = FPS::Caculate(dt);
+    }
 }
 
 void Game::ProcessInput(float dt){
@@ -215,6 +220,12 @@ void Game::ProcessInput(float dt){
             state_ = kGameMenu;
         }
     }
+
+    // 按P键打开/关闭调试模式
+    if(keys_[GLFW_KEY_P] && !keys_processed_[GLFW_KEY_P]){
+        keys_processed_[GLFW_KEY_P] = true;
+        debug_ = !debug_;
+    }
 }
 
 void Game::Render(){
@@ -260,6 +271,13 @@ void Game::Render(){
     if(state_ == kGameWin){
         text_renderer->RenderText("You WIN !!!", 320.0f, height_ / 2 - 20.0f, 1.0f, glm::vec3(0.0f, 1.0f, 0.0f));
         text_renderer->RenderText("Press ENTER to retry or ESC to quit", 130.0f, height_ / 2, 1.0f, glm::vec3(1.0, 1.0, 0.0));
+    }
+
+    if(debug_){  // 调试模式开启
+        // 显示帧率
+        std::stringstream ss;
+        ss << fps_;
+        text_renderer->RenderText("FPS:" + ss.str(), 5.0f, height_ - 20.0f, 1.0f, glm::vec3(1.0, 0.0, 0.0));
     }
 }
 
