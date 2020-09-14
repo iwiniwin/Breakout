@@ -4,7 +4,7 @@ in vec2 TexCoords;
 out vec4 FragColor;
 
 uniform sampler2D scene;
-uniform vec2 offset[9];
+uniform vec2 offsets[9];
 uniform int edge_kernel[9];
 uniform float blur_kernel[9];
 
@@ -18,7 +18,7 @@ void main(){
     if(chaos || shake)
         // 为使用卷积核采样周边像素
         for(int i = 0; i < 9; i ++)
-            sample[i] = vec3(texture(scene, TexCoords + offset[i]));
+            sample[i] = vec3(texture(scene, TexCoords + offsets[i]));
 
     if(chaos){
         // 应用边缘检测核
