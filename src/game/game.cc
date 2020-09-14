@@ -334,7 +334,7 @@ void Game::DoCollisions(){
 
     for(PowerUp& power_up : power_ups_){
         if(!power_up.destroyed_){
-            if(power_up.position_.x >= this->height_)
+            if(power_up.position_.y >= this->height_)
                 power_up.destroyed_ = true;
             Rect power_up_rect(power_up.position_, power_up.size_);
             if(Collision::Detect(paddle_rect, power_up_rect)){
