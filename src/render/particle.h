@@ -23,7 +23,9 @@ struct Particle {
 class ParticleGenerator
 {
 private:
+    // 存放所有产生的粒子
     vector<Particle> particles_;
+    // 产生的粒子数量
     unsigned int amount_;
 
     Shader shader_;

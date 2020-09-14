@@ -13,13 +13,23 @@ PostProcessor::PostProcessor(Shader shader, unsigned int width, unsigned int hei
 
     glBindFramebuffer(GL_FRAMEBUFFER, ms_fbo_);
     glBindRenderbuffer(GL_RENDERBUFFER, rbo_);
+    // 创建一个多重采样渲染缓冲对象，这里的8表示样本的数量
     glRenderbufferStorageMultisample(GL_RENDERBUFFER, 8, GL_RGB, width_, height_);
+    // 将渲染缓冲对象附加到帧缓冲上
     glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_RENDERBUFFER, rbo_);
     if(glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
         std::cout << "ERROR::POSTPROCESSOR: Failed to initialize MSFBO" << std::endl;
 
     glBindFramebuffer(GL_FRAMEBUFFER, fbo_);
     texture_.Generate(width_, height_, NULL);
+    /*
+        将纹理附件附加到帧缓冲上
+        参数1，目标帧缓冲类型
+        参数2，附件的附件的类型
+        参数3，附件的纹理的类型
+        参数4，附加的实际的纹理
+        参数5，Mipmap level
+    */
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texture_.id_, 0);
     if(glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
         std::cout << "ERROR::POSTPROCESSOR: Failed to initialize FBO" << std::endl;
@@ -55,12 +65,14 @@ PostProcessor::PostProcessor(Shader shader, unsigned int width, unsigned int hei
     glUniform1fv(glGetUniformLocation(shader_.id_, "blur_kernel"), 9, blur_kernel);
 }
 
+// 在场景渲染前调用，使场景全部被渲染到多重采样帧缓冲上
 void PostProcessor::BeginRender(){
     glBindFramebuffer(GL_FRAMEBUFFER, ms_fbo_);
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT);
 }
 
+// 在场景渲染完成后调用，将多重采样帧缓冲的内容，块传送到普通的帧缓冲，这样做是为了便于对多重采样帧缓冲的rbo内容进行采样
 void PostProcessor::EndRender(){
     glBindFramebuffer(GL_READ_BUFFER, ms_fbo_);
     glBindFramebuffer(GL_DRAW_FRAMEBUFFER, fbo_);
@@ -68,6 +80,9 @@ void PostProcessor::EndRender(){
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
+// 此函数完成对场景进行后处理任务
+// 基本流程是，对已经从多重采样帧缓冲的rbo中获得数据的纹理附件进行采样，然后根据不同的参数进行后处理
+// 最后将处理后的结果渲染为一个充满屏幕的四边形
 void PostProcessor::Render(float time){
     shader_.Use();
     shader_.SetFloat("time", time);
@@ -82,6 +97,7 @@ void PostProcessor::Render(float time){
     glBindVertexArray(0);
 }
 
+// 初始化渲染数据，构建辅屏四边形VAO
 void PostProcessor::initRenderData(){
     unsigned int vbo;
     float vertices[] = {

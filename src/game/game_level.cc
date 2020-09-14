@@ -58,6 +58,7 @@ void GameLevel::init(vector<vector<unsigned int>> tile_data, unsigned int level_
                 obj.is_solid_ = true;
                 bricks_.push_back(obj);
             }else if(tile_data[y][x] > 1){
+                // 根据不同的数字配置砖块的颜色
                 glm::vec3 color = glm::vec3(1.0f);
                 if(tile_data[y][x] == 2)
                     color = glm::vec3(0.2f, 0.6f, 1.0f);

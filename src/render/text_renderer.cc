@@ -6,7 +6,7 @@
 #include "text_renderer.h"
 #include "../core/resource_manager.h"
 
-TextRenderer::TextRenderer(Shader& shader, unsigned int width, unsigned int height)
+TextRenderer::TextRenderer(Shader& shader)
     : shader_(shader)
 {
     glGenVertexArrays(1, &vao_);
@@ -58,8 +58,8 @@ void TextRenderer::Load(std::string font, unsigned font_size){
 
         Character character = {
             texture,
-            glm::ivec2(face->glyph->bitmap.width, face->glyph->bitmap.rows),
-            glm::ivec2(face->glyph->bitmap_left, face->glyph->bitmap_top),
+            glm::ivec2(face->glyph->bitmap.width, face->glyph->bitmap.rows),  // 字形大小
+            glm::ivec2(face->glyph->bitmap_left, face->glyph->bitmap_top),  // 从基准线到字形左部/顶部的偏移量
             face->glyph->advance.x
         };
         characters_.insert(std::pair<char, Character>(c, character));
@@ -102,6 +102,13 @@ void TextRenderer::RenderText(std::string text, float x, float y, float scale, g
         glBindTexture(GL_TEXTURE_2D, ch.texture_id_);
         // 更新VBO
         glBindBuffer(GL_ARRAY_BUFFER, vbo_);
+        /*
+            glBufferSubData用于填充缓冲的特定区域
+            参数1，目标缓冲的类型
+            参数2，偏移量
+            参数3，数据大小
+            参数4，数据本身
+        */
         glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(vertices), vertices);
 
         glBindBuffer(GL_ARRAY_BUFFER, 0);

@@ -32,7 +32,7 @@ void Shader::Compile(const char* vertex_source, const char* fragment_source, con
         checkCompileErrors(geometry, "GEOMETRY");
     }
 
-    // shader程序
+    // 创建着色器程序对象
     id_ = glCreateProgram();
     glAttachShader(id_, vertex);
     glAttachShader(id_, fragment);

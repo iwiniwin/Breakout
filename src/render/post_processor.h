@@ -8,7 +8,7 @@ class PostProcessor
 {
 private:
     unsigned int ms_fbo_;  // 多重采样帧缓冲
-    unsigned int fbo_;
+    unsigned int fbo_;  // 普通帧缓冲
     unsigned int rbo_;  // 用于多重采样帧缓冲的渲染缓冲对象
     unsigned int vao_;
 
@@ -17,6 +17,10 @@ public:
     Shader shader_;
     Texture2D texture_;  // 帧缓冲的颜色附件
     unsigned int width_, height_;
+
+    // confuse，颠倒效果，反相
+    // chaos, 混沌效果，边缘检测+旋转偏移
+    // shake, 晃动效果，模糊+偏移
     bool confuse_, chaos_, shake_;
 
     PostProcessor(Shader shader, unsigned int width, unsigned int height);
