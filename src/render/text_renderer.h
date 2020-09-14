@@ -20,7 +20,7 @@ private:
 public:
     std::map<char, Character> characters_;
     Shader shader_;
-    TextRenderer(Shader& shader, unsigned int width, unsigned int height);
+    TextRenderer(Shader& shader);
 
     // 加载指定字体
     void Load(std::string font, unsigned font_size);

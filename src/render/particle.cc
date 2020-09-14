@@ -56,6 +56,7 @@ void ParticleGenerator::respawnParticle(Particle& particle, GameObject& object, 
     particle.velocity_ = object.velocity_ * 0.1f;
 }
 
+// 绘制所有未消亡的粒子
 void ParticleGenerator::Draw(){
     // add混合，粒子叠加在一起以产生发光效果，更加灼热
     glBlendFunc(GL_SRC_ALPHA, GL_ONE);
@@ -77,6 +78,7 @@ void ParticleGenerator::Draw(){
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 }
 
+// 初始化粒子生成器，1. 填充VAO 2. 根据amount_生成粒子对象
 void ParticleGenerator::init() {
     unsigned int vbo;
     float particle_quad[] = {

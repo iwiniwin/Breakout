@@ -90,7 +90,7 @@ void Game::Init(){
     sprite_renderer = new SpriteRenderer(sprite_shader);
     particle_generator = new ParticleGenerator(particle_shader, ResourceManager::GetTexture("particle"), 800);
     post_processor = new PostProcessor(postprocessing_shader, width_, height_);
-    text_renderer = new TextRenderer(text_shader, width_, height_);
+    text_renderer = new TextRenderer(text_shader);
 
     // 加载关卡
     GameLevel one;

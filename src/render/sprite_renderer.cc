@@ -39,6 +39,12 @@ void SpriteRenderer::DrawSprite(Texture2D& texture, glm::vec2 position, glm::vec
 
     // 绘制方形
     glBindVertexArray(quad_vao_);
+    /*
+        绘制函数
+        参数1，指明打算绘制的OpenGL图元类型
+        参数2，指定了顶点数组的起始索引
+        参数3，指定打算绘制多少个顶点
+    */
     glDrawArrays(GL_TRIANGLES, 0, 6);
     glBindVertexArray(0);
 }
@@ -59,10 +65,31 @@ void SpriteRenderer::intRenderData(){
     glGenBuffers(1, &vbo);
 
     glBindBuffer(GL_ARRAY_BUFFER, vbo);
+    /*
+        glBufferData专门用来把用户定义的数据复制到当前绑定缓冲中
+        参数1，目标缓冲的类型
+        参数2，指定传输数据的大小（以字节为单位）
+        参数3，希望发送的实际数据
+        参数4，指定了显卡如何管理给定的数据
+            GL_STATIC_DRAW : 数据不会或几乎不会被改变
+            GL_DYNAMIC_DRAW : 数据会被改变很多
+            GL_STREAM_DRAW : 数据每次绘制时都会改变
+    */
     glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 
     glBindVertexArray(quad_vao_);
+    // 以顶点属性位置值作为参数，启用顶点属性
     glEnableVertexAttribArray(0);
+    /*
+        设置顶点属性指针
+        告诉OpengGL如何解析顶点数据，如何把顶点数据链接到顶点着色器的顶点属性上
+        参数1，指定要配置的顶点属性索引，对应顶点着色器中的layout(location = x)
+        参数2，指定顶点属性的大小，这里是4个float值
+        参数3，指定数据的类型
+        参数4，定义是否希望数据被标准化，如果设置为GL_TRUE，所有数据都会被映射到0（对于有符号数据是-1）到1之间
+        参数5，指定步长stride，说明连续的顶点属性组之间的间隔，简单说就是整个属性第二次出现的地方到整个数组0位置之间有多少字节
+        参数6， 表示该属性数据在缓冲中起始位置的偏移量
+    */
     glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)0);
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindVertexArray(0);
