@@ -57,7 +57,7 @@ int main()
 	float delta_time = 0.0f;
 	float last_time = 0.0f;
 
-	breakout.state_ = KGameActive;
+	breakout.state_ = kGameMenu;
 
     while (!glfwWindowShouldClose(window)) {
         float current_time = (float)glfwGetTime();
@@ -92,7 +92,9 @@ void KeyCallback(GLFWwindow* window, int key, int scan_code, int action, int mod
 	if(key >= 0 && key < 1024){
 		if(action == GLFW_PRESS)
 			breakout.keys_[key] = GL_TRUE;
-		else if(action == GLFW_RELEASE)
+		else if(action == GLFW_RELEASE){
 			breakout.keys_[key] = GL_FALSE; 
+			breakout.keys_processed_[key] = GL_FALSE; 
+		}
 	}
 }

@@ -1,11 +1,13 @@
 #include <iostream>
 #include <algorithm>
+#include <sstream>
 
 #include "game.h"
 #include "../core/resource_manager.h"
 #include "../render/sprite_renderer.h"
 #include "../render/particle.h"
 #include "../render/post_processor.h"
+#include "../render/text_renderer.h"
 #include "../game/ball_object.h"
 #include "../utils/collision.h"
 #include "../utils/rect.h"
@@ -17,6 +19,7 @@ using namespace irrklang;
 SpriteRenderer* sprite_renderer;
 ParticleGenerator* particle_generator;
 PostProcessor* post_processor;
+TextRenderer* text_renderer;
 ISoundEngine* sound_engine = createIrrKlangDevice();
 
 // 挡板大小
@@ -34,10 +37,8 @@ BallObject *ball;
 // shake特效持续时间
 float shake_time = 0;
 
-Game::Game(unsigned int width, unsigned int height){
-    width_ = width;
-    height_ = height;
-}
+Game::Game(unsigned int width, unsigned int height) 
+    : width_(width), height_(height), life_(3) {}
 
 Game::~Game(){
     delete(sprite_renderer);
@@ -64,6 +65,10 @@ void Game::Init(){
 
     Shader postprocessing_shader = ResourceManager::LoadShader("resources/shaders/post_processing.vs", "resources/shaders/post_processing.frag", nullptr, "postprocessing");
 
+    Shader text_shader = ResourceManager::LoadShader("resources/shaders/text.vs", "resources/shaders/text.frag", nullptr, "text");
+    text_shader.Use().SetInteger("text", 0);
+    text_shader.SetMatrix4("projection", projection);
+
     // 加载纹理
     ResourceManager::LoadTexture("resources/textures/background.jpg", false, "background");
     ResourceManager::LoadTexture("resources/textures/awesomeface.png", true, "ball");
@@ -82,6 +87,7 @@ void Game::Init(){
     sprite_renderer = new SpriteRenderer(sprite_shader);
     particle_generator = new ParticleGenerator(particle_shader, ResourceManager::GetTexture("particle"), 500);
     post_processor = new PostProcessor(postprocessing_shader, width_, height_);
+    text_renderer = new TextRenderer(text_shader, width_, height_);
 
     // 加载关卡
     GameLevel one;
@@ -103,6 +109,9 @@ void Game::Init(){
     // 设置当前关卡
     level_ = 0;
 
+    // 加载字体
+    text_renderer->Load("resources/fonts/OCRAEXT.TTF", 24);
+
     // 初始化挡板
     glm::vec2 paddle_pos = glm::vec2(width_ / 2 - kPaddleSize.x / 2, height_ - kPaddleSize.y);
     paddle = new GameObject(paddle_pos, kPaddleSize, ResourceManager::GetTexture("paddle"));
@@ -111,6 +120,7 @@ void Game::Init(){
     glm::vec2 ball_pos = paddle_pos + glm::vec2(kPaddleSize.x / 2 - kBallRadius, -kBallRadius * 2);
     ball = new BallObject(ball_pos, kBallRadius, kBallVelocity, ResourceManager::GetTexture("ball"));
 
+    // 播放背景音乐
     sound_engine->play2D("resources/audio/breakout.mp3", true);
 }
 
@@ -125,14 +135,24 @@ void Game::Update(float dt){
 
     UpdatePowerUps(dt);
 
-    if(ball->position_.y >= height_){  // 小球接触底部边界，游戏失败
-        Reset();
-    }
-
     if(shake_time > 0.0f){
         shake_time -= dt;
         if(shake_time <= 0.0f)
             post_processor->shake_ = false;
+    }
+
+    if(ball->position_.y >= height_){  // 小球接触底部边界，游戏失败
+        if(--life_ == 0){
+            Reset();
+            state_ = kGameMenu;
+        }
+        ResetPlayer();
+    }
+
+    if(state_ == KGameActive && levels_[level_].IsCompleted()){
+        Reset();
+        post_processor->chaos_ = true;
+        state_ = kGameWin;
     }
 }
 
@@ -163,10 +183,36 @@ void Game::ProcessInput(float dt){
         if(keys_[GLFW_KEY_SPACE])
             ball->stuck_ = false;
     }
+    
+    if(state_ == kGameMenu){
+        if(keys_[GLFW_KEY_ENTER] && !keys_processed_[GLFW_KEY_ENTER]){
+            state_ = KGameActive;
+            keys_processed_[GLFW_KEY_ENTER] = true;
+        }
+        if(keys_[GLFW_KEY_W] && !keys_processed_[GLFW_KEY_W]){
+            level_ = (level_ + 1) % (levels_.size());
+            keys_processed_[GLFW_KEY_W] = true;
+        }
+        if(keys_[GLFW_KEY_S] && !keys_processed_[GLFW_KEY_S]){
+            if(level_ > 0)
+                level_ --;
+            else
+                level_ = levels_.size() - 1;
+            keys_processed_[GLFW_KEY_S] = true;
+        }
+    }
+
+    if(state_ == kGameWin){
+        if(keys_[GLFW_KEY_ENTER]){
+            keys_processed_[GLFW_KEY_ENTER] = true;
+            post_processor->chaos_ = false;
+            state_ = kGameMenu;
+        }
+    }
 }
 
 void Game::Render(){
-    if(state_ == KGameActive){
+    if(state_ == KGameActive || state_ == kGameMenu || state_ == kGameWin){
 
         post_processor->BeginRender();
 
@@ -194,6 +240,20 @@ void Game::Render(){
         post_processor->EndRender();
 
         post_processor->Render(glfwGetTime());
+
+        std::stringstream ss;  
+        ss << life_;
+        text_renderer->RenderText("Life:" + ss.str(), 5.0f, 5.0f, 1.0f);
+    }
+    
+    if(state_ == kGameMenu){
+        text_renderer->RenderText("Press ENTER to start", 250.0f, height_ / 2, 1.0f);
+        text_renderer->RenderText("Press W or S to select level", 245.0f, height_ / 2 + 20.0f, 0.75f);
+    }
+
+    if(state_ == kGameWin){
+        text_renderer->RenderText("You WIN !!!", 320.0f, height_ / 2 - 20.0f, 1.0f, glm::vec3(0.0f, 1.0f, 0.0f));
+        text_renderer->RenderText("Press ENTER to retry or ESC to quit", 130.0f, height_ / 2, 1.0f, glm::vec3(1.0, 1.0, 0.0));
     }
 }
 
@@ -307,6 +367,16 @@ void Game::Reset(){
     for(unsigned int i = 0; i <= level_; i ++)
         levels_[i].Reset();
 
+    // 重置道具
+    power_ups_.clear();
+
+    // 重置玩家生命值
+    life_ = 3;
+
+    ResetPlayer();
+}
+
+void Game::ResetPlayer(){
     // 重置挡板
     paddle->size_ = kPaddleSize;
     paddle->position_ = glm::vec2(width_ / 2 - kPaddleSize.x / 2, height_ - kPaddleSize.y);
@@ -318,9 +388,6 @@ void Game::Reset(){
     // 重置特效
     post_processor->chaos_ = false;
     post_processor->confuse_ = false;
-
-    // 重置道具
-    power_ups_.clear();
 }
 
 bool shouldSpawn(unsigned int chance){

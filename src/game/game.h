@@ -20,7 +20,10 @@ class Game
 public:
     // 游戏状态
     GameState state_;
+
     bool keys_[1024];
+    bool keys_processed_[1024];  // 记录按键事件是否被处理
+
     // 游戏分辨率
     unsigned int width_, height_;
 
@@ -31,6 +34,9 @@ public:
 
     // 所有道具
     vector<PowerUp> power_ups_;
+
+    // 玩家生命值
+    unsigned int life_;
 
     Game(unsigned int width, unsigned int height);
     ~Game();
@@ -49,8 +55,11 @@ public:
     // 碰撞检测
     void DoCollisions();
 
-    // 重置游戏数据
+    // 重置所有游戏数据
     void Reset();
+
+    // 重置玩家相关的操作数据
+    void ResetPlayer();
 
     // 在给定的一个砖块位置生成道具
     void SpawnPowerUps(GameObject &block);
