@@ -60,7 +60,7 @@ void TextRenderer::Load(std::string font, unsigned font_size){
             texture,
             glm::ivec2(face->glyph->bitmap.width, face->glyph->bitmap.rows),  // 字形大小
             glm::ivec2(face->glyph->bitmap_left, face->glyph->bitmap_top),  // 从基准线到字形左部/顶部的偏移量
-            face->glyph->advance.x
+            static_cast<unsigned int>(face->glyph->advance.x)
         };
         characters_.insert(std::pair<char, Character>(c, character));
     }

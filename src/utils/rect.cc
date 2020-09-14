@@ -13,7 +13,7 @@ Rect::Rect(glm::vec2 left_top, glm::vec2 size) {
 
 Rect::Rect(float left, float top, glm::vec2 size) {
     left_ = left;
-    top_ = top_;
+    top_ = top;
     right_ = left + size.x;
     bottom_ = top + size.y;
     size_ = size;
