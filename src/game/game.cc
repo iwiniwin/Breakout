@@ -187,9 +187,12 @@ void Game::ProcessInput(float dt){
     }
     
     if(state_ == kGameMenu){
-        if(keys_[GLFW_KEY_ENTER] && !keys_processed_[GLFW_KEY_ENTER]){
+        if((keys_[GLFW_KEY_ENTER] && !keys_processed_[GLFW_KEY_ENTER]) 
+            || (keys_[GLFW_KEY_KP_ENTER] && !keys_processed_[GLFW_KEY_KP_ENTER]))
+        {
             state_ = KGameActive;
             keys_processed_[GLFW_KEY_ENTER] = true;
+            keys_processed_[GLFW_KEY_KP_ENTER] = true;
         }
         if(keys_[GLFW_KEY_W] && !keys_processed_[GLFW_KEY_W]){
             level_ = (level_ + 1) % (levels_.size());
@@ -205,8 +208,9 @@ void Game::ProcessInput(float dt){
     }
 
     if(state_ == kGameWin){
-        if(keys_[GLFW_KEY_ENTER]){
+        if(keys_[GLFW_KEY_ENTER] || keys_[GLFW_KEY_KP_ENTER]){
             keys_processed_[GLFW_KEY_ENTER] = true;
+            keys_processed_[GLFW_KEY_KP_ENTER] = true;
             post_processor->chaos_ = false;
             state_ = kGameMenu;
         }
@@ -385,7 +389,7 @@ void Game::ResetPlayer(){
     paddle->color_ = glm::vec3(1.0f);
 
     // 重置小球
-    ball->Reset(paddle->position_ + glm::vec2(kPaddleSize.x / 2 - kBallRadius, -kBallRadius * 2), kBallVelocity);
+    ball->Reset(paddle->position_ + glm::vec2(kPaddleSize.x / 2 - kBallRadius, -kBallRadius * 2), kBallVelocity, kBallColor);
 
     // 重置特效
     post_processor->chaos_ = false;

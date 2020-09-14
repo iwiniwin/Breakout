@@ -23,7 +23,7 @@ public:
     // 根据球的速度移动球
     glm::vec2 Move(float dt, unsigned int window_width);
 
-    void Reset(glm::vec2 position, glm::vec2 velocity);
+    void Reset(glm::vec2 position, glm::vec2 velocity, glm::vec3 color);
 };
 
 #endif

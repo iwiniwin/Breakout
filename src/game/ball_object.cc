@@ -27,11 +27,11 @@ glm::vec2 BallObject::Move(float dt, unsigned int window_width){
     return position_;
 }
 
-void BallObject::Reset(glm::vec2 position, glm::vec2 velocity){
+void BallObject::Reset(glm::vec2 position, glm::vec2 velocity, glm::vec3 color){
     position_ = position;
     velocity_ = velocity;
     stuck_ = true;
     sticky_ = false;
     pass_through_ = false;
-    color_ = glm::vec3(1.0f);
+    color_ = color;
 }
