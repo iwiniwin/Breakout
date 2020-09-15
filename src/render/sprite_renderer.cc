@@ -51,6 +51,15 @@ void SpriteRenderer::DrawSprite(Texture2D& texture, glm::vec2 position, glm::vec
 
 void SpriteRenderer::intRenderData(){
     unsigned int vbo;
+    /*
+        顶点顺序采用(0.0f, 1.0f), (1.0f, 0.0f), (0.0f, 0.0f)顺时针定义是因为
+        顶点在顶点着色器中经投影矩阵转换后，实际变成(0.0f, 0.0f), (1.0f, 1.0f), (0.0f, 1.0f)，即逆时针定义，是正向三角形
+
+        既然(0.0f, 1.0f)经投影变换后会变成(0.0f, 0.0f)，那为什么它的纹理坐标仍然写成(0.0f, 1.0f)？
+        是因为虽然OpenGL要求纹理的(0.0f, 0.0f)是在左下角的，但是大多数图片的(0.0f, 0.0f)是在左上角的
+        所以在没有翻转y轴的情况下纹理坐标(0.0f, 1.0f)就对应了图片的左下角
+        可以在stb_image加载图片时调用stbi_set_flip_vertically_on_load(true);来翻转y轴保证图片的(0.0f, 0.0f)是在左下角
+    */
     float vertices[] = {
         // Pos     // TexCoords
         0.0f, 1.0f, 0.0f, 1.0f,
