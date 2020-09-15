@@ -100,6 +100,13 @@ void PostProcessor::Render(float time){
 // 初始化渲染数据，构建辅屏四边形VAO
 void PostProcessor::initRenderData(){
     unsigned int vbo;
+    /*
+        这里的顶点定义顺序与SpriteRenderer中的定义不同，因为顶点在后处理顶点着色器中不会进行投影变换
+        所以这里直接使用(-1.0f, -1.0f), (1.0f, 1.0f), (-1.0f, 1.0f)逆时针定义，即正面三角形
+
+        这里(-1.0f, -1.0f)对应纹理坐标(0.0f, 0.0f)，是因为后处理要采样的纹理是来自于多重采样帧缓冲的rbo中，
+        纹理坐标是符合OpenGL要求，(0.0f, 0.0f)在左下角的
+    */
     float vertices[] = {
         // Pos        // Tex
         -1.0f, -1.0f, 0.0f, 0.0f,
