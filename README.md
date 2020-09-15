@@ -8,6 +8,7 @@
 在原教程项目代码的基础上做了以下新增与优化
 
 * 添加了更多的代码注释
+* 优化三角形渲染方式，使用 `GL_TRIANGLE_STRIP`节省约三分之一需要传递的数据量
 * 新增按`P`键，打开或关闭左下角游戏帧率（FPS）显示
 
 ![](docs/debug_fps.png)
@@ -31,3 +32,6 @@ $ cmake --build .
 | Windows | 1607 |
 | Linux | TODO |
 | MacOS | TODO | 
+
+## 链接
+* 将LearnOpenGL教程中每一章节对应为一个场景的[学习笔记项目](https://github.com/iwiniwin/LearnOpenGL)

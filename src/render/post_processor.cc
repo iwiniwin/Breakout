@@ -93,7 +93,8 @@ void PostProcessor::Render(float time){
     glActiveTexture(GL_TEXTURE0);
     texture_.Bind();
     glBindVertexArray(vao_);
-    glDrawArrays(GL_TRIANGLES, 0, 6);
+    // glDrawArrays(GL_TRIANGLES, 0, 6);
+    glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
     glBindVertexArray(0);
 }
 
@@ -107,16 +108,26 @@ void PostProcessor::initRenderData(){
         这里(-1.0f, -1.0f)对应纹理坐标(0.0f, 0.0f)，是因为后处理要采样的纹理是来自于多重采样帧缓冲的rbo中，
         纹理坐标是符合OpenGL要求，(0.0f, 0.0f)在左下角的
     */
+    // float vertices[] = {
+    //     // Pos        // Tex
+    //     -1.0f, -1.0f, 0.0f, 0.0f,
+    //      1.0f,  1.0f, 1.0f, 1.0f,
+    //     -1.0f,  1.0f, 0.0f, 1.0f,
+
+    //     -1.0f, -1.0f, 0.0f, 0.0f,
+    //      1.0f, -1.0f, 1.0f, 0.0f,
+    //      1.0f,  1.0f, 1.0f, 1.0f
+    // };
+
+    // 优化，使用GL_TRIANGLE_STRIP渲染方式，节省需要传递的数据量
     float vertices[] = {
         // Pos        // Tex
+        -1.0f,  1.0f, 0.0f, 1.0f,
         -1.0f, -1.0f, 0.0f, 0.0f,
          1.0f,  1.0f, 1.0f, 1.0f,
-        -1.0f,  1.0f, 0.0f, 1.0f,
-
-        -1.0f, -1.0f, 0.0f, 0.0f,
          1.0f, -1.0f, 1.0f, 0.0f,
-         1.0f,  1.0f, 1.0f, 1.0f
     };
+
     glGenVertexArrays(1, &vao_);
     glGenBuffers(1, &vbo);
 

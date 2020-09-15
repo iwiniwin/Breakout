@@ -89,15 +89,24 @@ void TextRenderer::RenderText(std::string text, float x, float y, float scale, g
         float h = ch.size_.y * scale;
 
         // 对每个字符更新VBO
+        // float vertices[6][4] = {
+        //     { xpos,     ypos + h,   0.0, 1.0 },
+        //     { xpos + w, ypos,       1.0, 0.0 },
+        //     { xpos,     ypos,       0.0, 0.0 },
+
+        //     { xpos,     ypos + h,   0.0, 1.0 },
+        //     { xpos + w, ypos + h,   1.0, 1.0 },
+        //     { xpos + w, ypos,       1.0, 0.0 }
+        // };
+
+        // 优化，使用GL_TRIANGLE_STRIP渲染方式，节省需要传递的数据量
         float vertices[6][4] = {
+            { xpos,     ypos,       0.0, 0.0 },
             { xpos,     ypos + h,   0.0, 1.0 },
             { xpos + w, ypos,       1.0, 0.0 },
-            { xpos,     ypos,       0.0, 0.0 },
-
-            { xpos,     ypos + h,   0.0, 1.0 },
             { xpos + w, ypos + h,   1.0, 1.0 },
-            { xpos + w, ypos,       1.0, 0.0 }
         };
+
         // 在四边形上绘制纹理
         glBindTexture(GL_TEXTURE_2D, ch.texture_id_);
         // 更新VBO
@@ -113,7 +122,8 @@ void TextRenderer::RenderText(std::string text, float x, float y, float scale, g
 
         glBindBuffer(GL_ARRAY_BUFFER, 0);
         // 绘制四边形
-        glDrawArrays(GL_TRIANGLE_FAN, 0, 6);
+        // glDrawArrays(GL_TRIANGLES, 0, 6);
+        glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
         // 更新位置到下一个字形的原点，单位是1/64像素
         x += (ch.advance_ >> 6) * scale;
     }

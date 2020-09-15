@@ -69,7 +69,8 @@ void ParticleGenerator::Draw(){
             shader_.SetVector4f("color", particle.color_);
             texture_.Bind();
             glBindVertexArray(vao_);
-            glDrawArrays(GL_TRIANGLES, 0, 6);
+            // glDrawArrays(GL_TRIANGLES, 0, 6);
+            glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
             glBindVertexArray(0);
         }
     }
@@ -81,15 +82,24 @@ void ParticleGenerator::Draw(){
 // 初始化粒子生成器，1. 填充VAO 2. 根据amount_生成粒子对象
 void ParticleGenerator::init() {
     unsigned int vbo;
+    // float particle_quad[] = {
+    //     0.0f, 1.0f, 0.0f, 1.0f,
+    //     1.0f, 0.0f, 1.0f, 0.0f,
+    //     0.0f, 0.0f, 0.0f, 0.0f,
+
+    //     0.0f, 1.0f, 0.0f, 1.0f,
+    //     1.0f, 1.0f, 1.0f, 1.0f,
+    //     1.0f, 0.0f, 1.0f, 0.0f
+    // };
+
+    // 优化，使用GL_TRIANGLE_STRIP渲染方式，节省需要传递的数据量
     float particle_quad[] = {
+        0.0f, 0.0f, 0.0f, 0.0f,
         0.0f, 1.0f, 0.0f, 1.0f,
         1.0f, 0.0f, 1.0f, 0.0f,
-        0.0f, 0.0f, 0.0f, 0.0f,
-
-        0.0f, 1.0f, 0.0f, 1.0f,
         1.0f, 1.0f, 1.0f, 1.0f,
-        1.0f, 0.0f, 1.0f, 0.0f
     };
+
     glGenVertexArrays(1, &vao_);
     glGenBuffers(1, &vbo);
 

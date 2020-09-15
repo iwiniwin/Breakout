@@ -45,7 +45,8 @@ void SpriteRenderer::DrawSprite(Texture2D& texture, glm::vec2 position, glm::vec
         参数2，指定了顶点数组的起始索引
         参数3，指定打算绘制多少个顶点
     */
-    glDrawArrays(GL_TRIANGLES, 0, 6);
+    // glDrawArrays(GL_TRIANGLES, 0, 6);
+    glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
     glBindVertexArray(0);
 }
 
@@ -60,16 +61,26 @@ void SpriteRenderer::intRenderData(){
         所以在没有翻转y轴的情况下纹理坐标(0.0f, 1.0f)就对应了图片的左下角
         可以在stb_image加载图片时调用stbi_set_flip_vertically_on_load(true);来翻转y轴保证图片的(0.0f, 0.0f)是在左下角
     */
+    // float vertices[] = {
+    //     // Pos     // TexCoords
+    //     0.0f, 1.0f, 0.0f, 1.0f,
+    //     1.0f, 0.0f, 1.0f, 0.0f,
+    //     0.0f, 0.0f, 0.0f, 0.0f,
+
+    //     0.0f, 1.0f, 0.0f, 1.0f,
+    //     1.0f, 1.0f, 1.0f, 1.0f,
+    //     1.0f, 0.0f, 1.0f, 0.0f
+    // };
+
+    // 优化，使用GL_TRIANGLE_STRIP渲染方式，节省需要传递的数据量
     float vertices[] = {
         // Pos     // TexCoords
+        0.0f, 0.0f, 0.0f, 0.0f,
         0.0f, 1.0f, 0.0f, 1.0f,
         1.0f, 0.0f, 1.0f, 0.0f,
-        0.0f, 0.0f, 0.0f, 0.0f,
-
-        0.0f, 1.0f, 0.0f, 1.0f,
         1.0f, 1.0f, 1.0f, 1.0f,
-        1.0f, 0.0f, 1.0f, 0.0f
     };
+
     glGenVertexArrays(1, &quad_vao_);
     glGenBuffers(1, &vbo);
 
