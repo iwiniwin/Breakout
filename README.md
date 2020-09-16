@@ -8,10 +8,14 @@
 在原教程项目代码的基础上做了以下新增与优化
 
 * 添加了更多的代码注释
-* 优化三角形渲染方式，使用 `GL_TRIANGLE_STRIP`节省约三分之一需要传递的数据量
 * 新增按`P`键，打开或关闭左下角游戏帧率（FPS）显示
 
 ![](docs/debug_fps.png)
+
+* 优化三角形渲染方式，使用 `GL_TRIANGLE_STRIP`节省约三分之一需要传递的数据量
+* 优化粒子绘制效率，使用实例化渲染，以下截图是在总粒子数100000，每个dt更新1000个粒子的情况下，优化前后帧率对比
+
+![](docs/particle_instance_compare_fps.png)!
 
 ## 编译
 克隆项目代码，在项目根目录执行以下命令
@@ -33,5 +37,6 @@ $ cmake --build .
 | Linux | TODO |
 | MacOS | TODO | 
 
-## 链接
+## 更多
+* 与LearnOpenGL教程一致，不包含任何新增功能与优化的源码可以查看[standard分支](https://github.com/iwiniwin/Breakout/tree/standard)
 * 将LearnOpenGL教程中每一章节对应为一个场景的[学习笔记项目](https://github.com/iwiniwin/LearnOpenGL)
