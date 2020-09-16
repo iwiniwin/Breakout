@@ -32,12 +32,17 @@ private:
     Texture2D texture_;
 
     unsigned int vao_;
+
+    float* instance_data_;  // 实例化用的数据
+    unsigned int instance_vbo_;  // 实例化用的VBO
+    
     void init();
     unsigned int firstUnusedParticle();
     void respawnParticle(Particle& particle, GameObject& object, glm::vec2 offset = glm::vec2(0.0f, 0.0f));
 
 public:
     ParticleGenerator(Shader shader, Texture2D texture, unsigned amount);
+    ~ParticleGenerator();
 
     // 更新所有粒子
     void Update(float dt, GameObject& object, unsigned new_particles, glm::vec2 offset = glm::vec2(0.0f, 0.0f));

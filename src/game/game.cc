@@ -40,6 +40,11 @@ BallObject *ball;
 // shake特效持续时间
 float shake_time = 0;
 
+// 预创建的总粒子数
+const unsigned int kParticleAmount = 800;
+// 每个dt更新的粒子数
+const unsigned int kUpdateParticleAmount = 2;
+
 Game::Game(unsigned int width, unsigned int height) 
     : width_(width), height_(height), life_(3) {}
 
@@ -88,7 +93,7 @@ void Game::Init(){
     ResourceManager::LoadTexture("resources/textures/powerup_passthrough.png", true, "powerup_passthrough");
 
     sprite_renderer = new SpriteRenderer(sprite_shader);
-    particle_generator = new ParticleGenerator(particle_shader, ResourceManager::GetTexture("particle"), 800);
+    particle_generator = new ParticleGenerator(particle_shader, ResourceManager::GetTexture("particle"), kParticleAmount);
     post_processor = new PostProcessor(postprocessing_shader, width_, height_);
     text_renderer = new TextRenderer(text_shader);
 
@@ -131,7 +136,7 @@ void Game::Update(float dt){
     // 移动小球
     ball->Move(dt, width_);
 
-    particle_generator->Update(dt, *ball, 2, glm::vec2(ball->radius_ / 2));
+    particle_generator->Update(dt, *ball, kUpdateParticleAmount, glm::vec2(ball->radius_ / 2));
 
     // 碰撞检测
     DoCollisions();

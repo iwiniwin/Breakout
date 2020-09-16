@@ -6,10 +6,16 @@ ParticleGenerator::ParticleGenerator(Shader shader, Texture2D texture, unsigned 
     init();
 }
 
+ParticleGenerator::~ParticleGenerator(){
+    delete(instance_data_);
+}
+
 void ParticleGenerator::Update(float dt, GameObject& object, unsigned int new_particles, glm::vec2 offset){
     // 每一帧新产生粒子
     for(unsigned int i = 0; i < new_particles; i ++){
         int unused_particle = firstUnusedParticle();
+        if(unused_particle == -1)
+            break;
         respawnParticle(particles_[unused_particle], object, offset);
     }
 
@@ -40,9 +46,9 @@ unsigned int ParticleGenerator::firstUnusedParticle() {
         }
     }
     
-    // 未找到消亡粒子，覆盖第一个粒子
+    // 未找到消亡粒子
     last_used_particle = 0;
-    return 0;
+    return -1;
 }
 
 // 重新生成一个粒子
@@ -63,17 +69,36 @@ void ParticleGenerator::Draw(){
 
     shader_.Use();
 
+    glBindVertexArray(vao_);
+
+    // for(Particle particle : particles_){
+    //     if(particle.life_ > 0.0f){
+    //         shader_.SetVector2f("offset", particle.position_);
+    //         shader_.SetVector4f("color", particle.color_);
+    //         texture_.Bind();
+    //         // glDrawArrays(GL_TRIANGLES, 0, 6);
+    //         glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+    //     }
+    // }
+    
+    texture_.Bind();
+    unsigned int cnt = 0;
     for(Particle particle : particles_){
         if(particle.life_ > 0.0f){
-            shader_.SetVector2f("offset", particle.position_);
-            shader_.SetVector4f("color", particle.color_);
-            texture_.Bind();
-            glBindVertexArray(vao_);
-            // glDrawArrays(GL_TRIANGLES, 0, 6);
-            glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
-            glBindVertexArray(0);
+            instance_data_[cnt ++] = particle.position_.x;
+            instance_data_[cnt ++] = particle.position_.y;
+            instance_data_[cnt ++] = particle.color_.r;
+            instance_data_[cnt ++] = particle.color_.g;
+            instance_data_[cnt ++] = particle.color_.b;
+            instance_data_[cnt ++] = particle.color_.a;
         }
     }
+    glBindBuffer(GL_ARRAY_BUFFER, instance_vbo_);
+    glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(float) * cnt, instance_data_);
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    glDrawArraysInstanced(GL_TRIANGLE_STRIP, 0, 4, cnt / 6);
+    
+    glBindVertexArray(0);
 
     // 还原默认的混合模式
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -109,9 +134,34 @@ void ParticleGenerator::init() {
 
     glEnableVertexAttribArray(0);
     glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)0);
+
+    // 用于实例化的vbo
+    glGenBuffers(1, &instance_vbo_);
+    glBindBuffer(GL_ARRAY_BUFFER, instance_vbo_);
+
+    // 这里的6表示<vec2 offset, vec4 color>
+    glBufferData(GL_ARRAY_BUFFER, sizeof(float) * 6 * amount_, NULL, GL_DYNAMIC_DRAW);
+    glEnableVertexAttribArray(1);
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
+    glEnableVertexAttribArray(2);
+    glVertexAttribPointer(2, 4, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(2 * sizeof(float)));
+
+    /*
+        告诉OpenGL该什么时候更新顶点属性的数据
+        参数1，需要设置的顶点属性
+        参数2，属性除数，默认情况下是0，即在每次顶点着色器迭代时都更新数据
+               设置为1时表示希望在渲染一个新实例的时候更新，2则表示2个实例，以此类推
+    */
+    glVertexAttribDivisor(1, 1);
+    glVertexAttribDivisor(2, 1);
+
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+
     glBindVertexArray(0);
 
     // 生成amount_数量的粒子实例
     for(unsigned int i = 0; i < amount_; i ++)
         particles_.push_back(Particle());
+
+    instance_data_ = new float[amount_ * 6];
 }
