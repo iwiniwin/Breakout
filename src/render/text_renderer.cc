@@ -38,32 +38,86 @@ void TextRenderer::Load(std::string font, unsigned font_size){
     glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 
     // 生成ASCII字符集的前128个字符
+    // for(unsigned char c = 0; c < 128; c++){
+    //     // 加载一个字形，FT_LOAD_RENDER表示创建一个8位的灰度图
+    //     if(FT_Load_Char(face, c, FT_LOAD_RENDER)){
+    //         std::cout << "ERROR::FREETYTPE: Failed to load Glyph :\n" << c << std::endl;
+    //         continue;
+    //     }
+    //     // 生成纹理
+    //     unsigned int texture;
+    //     glGenTextures(1, &texture);
+    //     glBindTexture(GL_TEXTURE_2D, texture);
+    //     glTexImage2D(GL_TEXTURE_2D, 0, GL_RED, face->glyph->bitmap.width, face->glyph->bitmap.rows, 0, GL_RED, GL_UNSIGNED_BYTE, face->glyph->bitmap.buffer);
+
+    //     // 设置纹理选项
+    //     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    //     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    //     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    //     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+    //     Character character = {
+    //         texture,
+    //         glm::ivec2(face->glyph->bitmap.width, face->glyph->bitmap.rows),  // 字形大小
+    //         glm::ivec2(face->glyph->bitmap_left, face->glyph->bitmap_top),  // 从基准线到字形左部/顶部的偏移量
+    //         static_cast<unsigned int>(face->glyph->advance.x)
+    //     };
+    //     characters_.insert(std::pair<char, Character>(c, character));
+        
+    //     if(c == 'A')
+    //         ttt_ = texture;
+    //     // break;
+    // }
+
+
+    // 优化，将所有字符的纹理合并到一个大图上
+    unsigned int width = 256, height = 256;
+    unsigned int x = 0, y = 0, max_h = 0;
+    unsigned char* data = new unsigned char[width * height];
     for(unsigned char c = 0; c < 128; c++){
         // 加载一个字形，FT_LOAD_RENDER表示创建一个8位的灰度图
         if(FT_Load_Char(face, c, FT_LOAD_RENDER)){
             std::cout << "ERROR::FREETYTPE: Failed to load Glyph :\n" << c << std::endl;
             continue;
         }
-        // 生成纹理
-        unsigned int texture;
-        glGenTextures(1, &texture);
-        glBindTexture(GL_TEXTURE_2D, texture);
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RED, face->glyph->bitmap.width, face->glyph->bitmap.rows, 0, GL_RED, GL_UNSIGNED_BYTE, face->glyph->bitmap.buffer);
+        FT_Bitmap& bitmap = face->glyph->bitmap;
 
-        // 设置纹理选项
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        if(x + bitmap.width > width){
+            x = 0;
+            y += max_h;
+            max_h = 0;
+        }
+        unsigned int index = 0;
+        for(unsigned int cy = 0; cy < bitmap.rows; cy ++){
+            for(unsigned int cx = 0; cx < bitmap.width; cx ++){
+                index =  (y + cy) * width + cx + x;
+                data[index] = bitmap.buffer[cy * bitmap.width + cx];
+            }
+        }
 
         Character character = {
-            texture,
-            glm::ivec2(face->glyph->bitmap.width, face->glyph->bitmap.rows),  // 字形大小
+            glm::vec2((float)x / width, (float)y / height),
+            glm::vec2((float)bitmap.width / width, (float)bitmap.rows / height),
+            glm::ivec2(bitmap.width, bitmap.rows),  // 字形大小
             glm::ivec2(face->glyph->bitmap_left, face->glyph->bitmap_top),  // 从基准线到字形左部/顶部的偏移量
             static_cast<unsigned int>(face->glyph->advance.x)
         };
         characters_.insert(std::pair<char, Character>(c, character));
+
+        x += bitmap.width;
+        if(bitmap.rows > max_h)
+            max_h = bitmap.rows;
     }
+    // 生成纹理
+    glGenTextures(1, &texture_id_);
+    glBindTexture(GL_TEXTURE_2D, texture_id_);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RED, width, height, 0, GL_RED, GL_UNSIGNED_BYTE, data);
+    // 设置纹理选项
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    delete(data);
 
     glBindTexture(GL_TEXTURE_2D, 0);
 
@@ -77,6 +131,9 @@ void TextRenderer::RenderText(std::string text, float x, float y, float scale, g
     shader_.SetVector3f("textColor", color);
     glActiveTexture(GL_TEXTURE0);
     glBindVertexArray(vao_);
+
+    // 优化，只需要绑定一次大的位图即可
+    glBindTexture(GL_TEXTURE_2D, texture_id_);
 
     std::string::const_iterator c;
     for(c = text.begin(); c != text.end(); c ++){
@@ -100,15 +157,23 @@ void TextRenderer::RenderText(std::string text, float x, float y, float scale, g
         // };
 
         // 优化，使用GL_TRIANGLE_STRIP渲染方式，节省需要传递的数据量
+        // float vertices[6][4] = {
+        //     { xpos,     ypos,       0.0, 0.0 },
+        //     { xpos,     ypos + h,   0.0, 1.0 },
+        //     { xpos + w, ypos,       1.0, 0.0 },
+        //     { xpos + w, ypos + h,   1.0, 1.0 },
+        // };
+        // // 在四边形上绘制纹理
+        // glBindTexture(GL_TEXTURE_2D, ch.texture_id_);
+
+        // 优化，根据每个字形在位图中位置填充VBO
         float vertices[6][4] = {
-            { xpos,     ypos,       0.0, 0.0 },
-            { xpos,     ypos + h,   0.0, 1.0 },
-            { xpos + w, ypos,       1.0, 0.0 },
-            { xpos + w, ypos + h,   1.0, 1.0 },
+            { xpos,     ypos,       ch.texcoords_.x, ch.texcoords_.y },
+            { xpos,     ypos + h,   ch.texcoords_.x, ch.texcoords_.y + ch.offset_.y },
+            { xpos + w, ypos,       ch.texcoords_.x + ch.offset_.x, ch.texcoords_.y },
+            { xpos + w, ypos + h,   ch.texcoords_.x + ch.offset_.x, ch.texcoords_.y + ch.offset_.y },
         };
 
-        // 在四边形上绘制纹理
-        glBindTexture(GL_TEXTURE_2D, ch.texture_id_);
         // 更新VBO
         glBindBuffer(GL_ARRAY_BUFFER, vbo_);
         /*

@@ -13,6 +13,18 @@ void Texture2D::Generate(unsigned int width, unsigned int height, unsigned char*
     height_ = height;
 
     glBindTexture(GL_TEXTURE_2D, id_);
+    /*
+        生成一个纹理
+        参数1，指定了纹理目标
+        参数2，为纹理指定多级渐远纹理的级别
+        参数3，指定纹理的储存格式
+        参数4，设置最终纹理的宽
+        参数5，设置最终纹理的高
+        参数6，应该总被设置为0，历史遗留问题
+        参数7，定义了源图的格式
+        参数8，定义了源图的数据类型
+        参数9，真正的图像数据
+    */ 
     glTexImage2D(GL_TEXTURE_2D, 0, internal_format_, width_, height_, 0, image_format_, GL_UNSIGNED_BYTE, data);
     
     // 设置纹理环绕，过滤方式
