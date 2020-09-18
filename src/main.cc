@@ -8,6 +8,7 @@
 using namespace std;
 
 void KeyCallback(GLFWwindow* window, int key, int scan_code, int action, int mode);
+void FramebufferSizeCallback(GLFWwindow* window, int width, int height);
 
 // 屏幕的宽高
 const unsigned int kWidth = 800;
@@ -24,6 +25,10 @@ int main()
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
 	// 使用OpenGL核心模式
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+#ifdef __APPLE__
+	glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
+#endif
+	glfwWindowHint(GLFW_RESIZABLE, false);
 
 	// 创建建一个窗口对象，这个对象存放了所有和窗口相关的数据
 	GLFWwindow* window = glfwCreateWindow(kWidth, kHeight, "Breakout", NULL, NULL);
@@ -42,6 +47,7 @@ int main()
 	}
 
 	glfwSetKeyCallback(window, KeyCallback);
+	glfwSetFramebufferSizeCallback(window, FramebufferSizeCallback);
 
 	// OpenGL配置
 	glViewport(0, 0, kWidth, kHeight);
@@ -97,4 +103,9 @@ void KeyCallback(GLFWwindow* window, int key, int scan_code, int action, int mod
 			breakout.keys_processed_[key] = GL_FALSE; 
 		}
 	}
+}
+
+void FramebufferSizeCallback(GLFWwindow* window, int width, int height){
+	// 保证视口与窗口大小一致
+	glViewport(0, 0, width, height);
 }
