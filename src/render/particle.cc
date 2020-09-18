@@ -1,7 +1,7 @@
 #include "particle.h"
 
-ParticleGenerator::ParticleGenerator(Shader shader, Texture2D texture, unsigned amount) 
-    : shader_(shader), texture_(texture), amount_(amount)
+ParticleGenerator::ParticleGenerator(glm::vec2 scale, Shader shader, Texture2D texture, unsigned amount) 
+    : scale_(scale), shader_(shader), texture_(texture), amount_(amount)
 {
     init();
 }
@@ -68,6 +68,7 @@ void ParticleGenerator::Draw(){
     glBlendFunc(GL_SRC_ALPHA, GL_ONE);
 
     shader_.Use();
+    shader_.SetFloat("scale", 10 * scale_.x);
 
     glBindVertexArray(vao_);
 

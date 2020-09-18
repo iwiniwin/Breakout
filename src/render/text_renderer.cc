@@ -71,7 +71,7 @@ void TextRenderer::Load(std::string font, unsigned font_size){
 
 
     // 优化，将所有字符的纹理合并到一个大图上
-    unsigned int width = 256, height = 256;
+    unsigned int width = font_size * 10, height = font_size * 10;
     unsigned int x = 0, y = 0, max_h = 0;
     unsigned char* data = new unsigned char[width * height];
     for(unsigned char c = 0; c < 128; c++){
@@ -117,7 +117,7 @@ void TextRenderer::Load(std::string font, unsigned font_size){
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    delete(data);
+    delete[] data;
 
     glBindTexture(GL_TEXTURE_2D, 0);
 

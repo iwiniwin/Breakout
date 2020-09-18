@@ -23,6 +23,8 @@ struct Particle {
 class ParticleGenerator
 {
 private:
+    // 屏幕缩放，用来影响粒子大小
+    glm::vec2 scale_;
     // 存放所有产生的粒子
     vector<Particle> particles_;
     // 产生的粒子数量
@@ -41,7 +43,7 @@ private:
     void respawnParticle(Particle& particle, GameObject& object, glm::vec2 offset = glm::vec2(0.0f, 0.0f));
 
 public:
-    ParticleGenerator(Shader shader, Texture2D texture, unsigned amount);
+    ParticleGenerator(glm::vec2 scale, Shader shader, Texture2D texture, unsigned int amount);
     ~ParticleGenerator();
 
     // 更新所有粒子

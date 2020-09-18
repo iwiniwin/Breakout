@@ -24,15 +24,15 @@ TextRenderer* text_renderer;
 ISoundEngine* sound_engine = createIrrKlangDevice();
 
 // 挡板大小
-const glm::vec2 kPaddleSize(100, 20);
+glm::vec2 paddle_size(100, 20);
 // 挡板速度
-const float kPaddleVelocity(500.0f);
+float paddle_velocity(500.0f);
 GameObject* paddle;
 
 // 球的速度
-const glm::vec2 kBallVelocity(100.0f, -350.0f);
+glm::vec2 ball_velocity(100.0f, -350.0f);
 // 球的半径
-const float kBallRadius = 13.5f;
+float ball_radius = 13.5f;
 // 球的颜色
 const glm::vec3 kBallColor(135/255.0f, 206/255.0f, 245/255.0f);
 BallObject *ball;
@@ -57,8 +57,17 @@ Game::~Game(){
     sound_engine->drop();
 }
 
-void Game::Init(){
-    
+void Game::Init(glm::vec2 scale){
+    scale_ = scale;
+    width_ *= scale.x;
+    height_ *= scale_.y;
+    // 根据屏幕缩放调整挡板
+    paddle_size *= scale;
+    paddle_velocity *= scale.x;
+    // 根据屏幕缩放调整小球
+    ball_radius *= scale.x;
+    ball_velocity *= scale;
+
     // 前四个参数依次指定了左，右，下，上边界，后两个参数定义了近平面和远平面的距离
     // 即左上角坐标为(0, 0)，右下角坐标为(width_, height_)
     glm::mat4 projection = glm::ortho(0.0f, static_cast<float>(width_), static_cast<float>(height_), 0.0f, -1.0f, 1.0f);
@@ -93,7 +102,7 @@ void Game::Init(){
     ResourceManager::LoadTexture("resources/textures/powerup_passthrough.png", true, "powerup_passthrough");
 
     sprite_renderer = new SpriteRenderer(sprite_shader);
-    particle_generator = new ParticleGenerator(particle_shader, ResourceManager::GetTexture("particle"), kParticleAmount);
+    particle_generator = new ParticleGenerator(scale_, particle_shader, ResourceManager::GetTexture("particle"), kParticleAmount);
     post_processor = new PostProcessor(postprocessing_shader, width_, height_);
     text_renderer = new TextRenderer(text_shader);
 
@@ -118,15 +127,15 @@ void Game::Init(){
     level_ = 0;
 
     // 加载字体
-    text_renderer->Load("resources/fonts/OCRAEXT.TTF", 24);
+    text_renderer->Load("resources/fonts/OCRAEXT.TTF", 24 * scale_.y);
 
     // 初始化挡板
-    glm::vec2 paddle_pos = glm::vec2(width_ / 2 - kPaddleSize.x / 2, height_ - kPaddleSize.y);
-    paddle = new GameObject(paddle_pos, kPaddleSize, ResourceManager::GetTexture("paddle"));
+    glm::vec2 paddle_pos = glm::vec2(width_ / 2 - paddle_size.x / 2, height_ - paddle_size.y);
+    paddle = new GameObject(paddle_pos, paddle_size, ResourceManager::GetTexture("paddle"));
 
     // 初始化小球
-    glm::vec2 ball_pos = paddle_pos + glm::vec2(kPaddleSize.x / 2 - kBallRadius, -kBallRadius * 2);
-    ball = new BallObject(ball_pos, kBallRadius, kBallVelocity, ResourceManager::GetTexture("ball"), kBallColor);
+    glm::vec2 ball_pos = paddle_pos + glm::vec2(paddle_size.x / 2 - ball_radius, -ball_radius * 2);
+    ball = new BallObject(ball_pos, ball_radius, ball_velocity, ResourceManager::GetTexture("ball"), kBallColor);
 
     // 播放背景音乐
     sound_engine->play2D("resources/audio/breakout.mp3", true);
@@ -170,7 +179,7 @@ void Game::Update(float dt){
 
 void Game::ProcessInput(float dt){
     if(state_ == KGameActive){
-        float velocity = kPaddleVelocity * dt;
+        float velocity = paddle_velocity * dt;
         // 移动挡板
         if(keys_[GLFW_KEY_A]){
             float x = paddle->position_.x;
@@ -265,24 +274,24 @@ void Game::Render(){
 
         std::stringstream ss;  
         ss << life_;
-        text_renderer->RenderText("Life:" + ss.str(), 5.0f, 5.0f, 1.0f);
+        text_renderer->RenderText("Life:" + ss.str(), 5.0f * scale_.x, 5.0f * scale_.y, 1.0f);
     }
     
     if(state_ == kGameMenu){
-        text_renderer->RenderText("Press ENTER to start", 250.0f, height_ / 2, 1.0f);
-        text_renderer->RenderText("Press W or S to select level", 245.0f, height_ / 2 + 20.0f, 0.75f);
+        text_renderer->RenderText("Press ENTER to start", 250.0f * scale_.x, height_ / 2, 1.0f);
+        text_renderer->RenderText("Press W or S to select level", 245.0f * scale_.x, height_ / 2 + 20.0f * scale_.y, 0.75f);
     }
 
     if(state_ == kGameWin){
-        text_renderer->RenderText("You WIN !!!", 320.0f, height_ / 2 - 20.0f, 1.0f, glm::vec3(0.0f, 1.0f, 0.0f));
-        text_renderer->RenderText("Press ENTER to retry or ESC to quit", 130.0f, height_ / 2, 1.0f, glm::vec3(1.0, 1.0, 0.0));
+        text_renderer->RenderText("You WIN !!!", 320.0f * scale_.x, height_ / 2 - 20.0f * scale_.y, 1.0f, glm::vec3(0.0f, 1.0f, 0.0f));
+        text_renderer->RenderText("Press ENTER to retry or ESC to quit", 130.0f * scale_.x, height_ / 2, 1.0f, glm::vec3(1.0, 1.0, 0.0));
     }
 
     if(debug_){  // 调试模式开启
         // 显示帧率
         std::stringstream ss;
         ss << fps_;
-        text_renderer->RenderText("FPS:" + ss.str(), 5.0f, height_ - 20.0f, 1.0f, glm::vec3(1.0, 0.0, 0.0));
+        text_renderer->RenderText("FPS:" + ss.str(), 5.0f * scale_.x, height_ - 20.0f * scale_.y, 1.0f, glm::vec3(1.0, 0.0, 0.0));
     }
 }
 
@@ -380,7 +389,7 @@ void Game::DoCollisions(){
 
         float strength = 2.0f;
         glm::vec2 old_velocity = ball->velocity_;
-        ball->velocity_.x = kBallVelocity.x * percentage * strength;
+        ball->velocity_.x = ball_velocity.x * percentage * strength;
         // ball->velocity_.y = - ball->velocity_.y;
         ball->velocity_.y = 1 - abs(ball->velocity_.y);
         // 保证小球总的速度与力量是一致的
@@ -407,12 +416,12 @@ void Game::Reset(){
 
 void Game::ResetPlayer(){
     // 重置挡板
-    paddle->size_ = kPaddleSize;
-    paddle->position_ = glm::vec2(width_ / 2 - kPaddleSize.x / 2, height_ - kPaddleSize.y);
+    paddle->size_ = paddle_size;
+    paddle->position_ = glm::vec2(width_ / 2 - paddle_size.x / 2, height_ - paddle_size.y);
     paddle->color_ = glm::vec3(1.0f);
 
     // 重置小球
-    ball->Reset(paddle->position_ + glm::vec2(kPaddleSize.x / 2 - kBallRadius, -kBallRadius * 2), kBallVelocity, kBallColor);
+    ball->Reset(paddle->position_ + glm::vec2(paddle_size.x / 2 - ball_radius, -ball_radius * 2), ball_velocity, kBallColor);
 
     // 重置特效
     post_processor->chaos_ = false;
@@ -429,20 +438,20 @@ void Game::SpawnPowerUps(GameObject &block){
     // 正面道具，出现概率 1/75
 
     if(shouldSpawn(75))
-        power_ups_.push_back(PowerUp("speed", glm::vec3(0.5f, 0.5f, 1.0f), 0.0f, block.position_, ResourceManager::GetTexture("powerup_speed")));
+        power_ups_.push_back(PowerUp("speed", scale_, glm::vec3(0.5f, 0.5f, 1.0f), 0.0f, block.position_, ResourceManager::GetTexture("powerup_speed")));
     if(shouldSpawn(75))
-        power_ups_.push_back(PowerUp("sticky", glm::vec3(1.0f, 0.5f, 1.0f), 20.0f, block.position_, ResourceManager::GetTexture("powerup_sticky")));
+        power_ups_.push_back(PowerUp("sticky", scale_, glm::vec3(1.0f, 0.5f, 1.0f), 20.0f, block.position_, ResourceManager::GetTexture("powerup_sticky")));
     if(shouldSpawn(75))
-        power_ups_.push_back(PowerUp("pass-through", glm::vec3(0.5f, 1.0f, 0.5f), 10.0f, block.position_, ResourceManager::GetTexture("powerup_passthrough")));
+        power_ups_.push_back(PowerUp("pass-through", scale_, glm::vec3(0.5f, 1.0f, 0.5f), 10.0f, block.position_, ResourceManager::GetTexture("powerup_passthrough")));
     if(shouldSpawn(75))
-        power_ups_.push_back(PowerUp("pad-size-increase", glm::vec3(1.0f, 0.6f, 0.4f), 0.0f, block.position_, ResourceManager::GetTexture("powerup_increase")));
+        power_ups_.push_back(PowerUp("pad-size-increase",scale_, glm::vec3(1.0f, 0.6f, 0.4f), 0.0f, block.position_, ResourceManager::GetTexture("powerup_increase")));
 
     // 负面道具，出现概率 1/15
 
     if(shouldSpawn(15))
-        power_ups_.push_back(PowerUp("confuse", glm::vec3(1.0f, 0.3f, 0.3f), 15.0f, block.position_, ResourceManager::GetTexture("powerup_confuse")));
+        power_ups_.push_back(PowerUp("confuse", scale_, glm::vec3(1.0f, 0.3f, 0.3f), 15.0f, block.position_, ResourceManager::GetTexture("powerup_confuse")));
     if(shouldSpawn(15))
-        power_ups_.push_back(PowerUp("chaos", glm::vec3(0.9f, 0.25f, 0.25f), 15.0f, block.position_, ResourceManager::GetTexture("powerup_chaos")));
+        power_ups_.push_back(PowerUp("chaos", scale_, glm::vec3(0.9f, 0.25f, 0.25f), 15.0f, block.position_, ResourceManager::GetTexture("powerup_chaos")));
 }
 
 // 检查是否有其他道具激活了指定的效果

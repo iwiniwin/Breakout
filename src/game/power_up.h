@@ -20,8 +20,8 @@ public:
     // 是否被激活
     bool activated_;
 
-    PowerUp(std::string type, glm::vec3 color, float duration, glm::vec2 position, Texture2D texture)
-        : GameObject(position, kSize, texture, color, kVelocity), type_(type), duration_(duration), activated_() {}
+    PowerUp(std::string type, glm::vec2 scale, glm::vec3 color, float duration, glm::vec2 position, Texture2D texture)
+        : GameObject(position, kSize * scale, texture, color, kVelocity * scale), type_(type), duration_(duration), activated_() {}
 };
 
 #endif

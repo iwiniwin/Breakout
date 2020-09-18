@@ -10,9 +10,12 @@ using namespace std;
 void KeyCallback(GLFWwindow* window, int key, int scan_code, int action, int mode);
 void FramebufferSizeCallback(GLFWwindow* window, int width, int height);
 
-// 屏幕的宽高
+// 屏幕的宽高，引入缩放的概念后，相当于设计分辨率
 const unsigned int kWidth = 800;
 const unsigned int kHeight = 600;
+
+// 全局的缩放，可用于适配retina屏幕
+glm::vec2 screen_scale;
 
 Game breakout(kWidth, kHeight);
  
@@ -46,6 +49,10 @@ int main()
 		return 0;
 	}
 
+	int screen_width, screen_height;
+	glfwGetFramebufferSize(window, &screen_width, &screen_height);
+	screen_scale = glm::vec2(screen_width / kWidth, screen_height / kHeight);
+
 	glfwSetKeyCallback(window, KeyCallback);
 	glfwSetFramebufferSizeCallback(window, FramebufferSizeCallback);
 
@@ -58,7 +65,7 @@ int main()
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
 	// 初始化游戏
-	breakout.Init();
+	breakout.Init(screen_scale);
 
 	float delta_time = 0.0f;
 	float last_time = 0.0f;

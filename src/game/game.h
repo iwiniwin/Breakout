@@ -27,6 +27,9 @@ public:
     // 游戏分辨率
     unsigned int width_, height_;
 
+    // 屏幕缩放
+    glm::vec2 scale_;
+
     // 游戏中所有关卡
     vector<GameLevel> levels_;
     // 当前关卡
@@ -47,7 +50,7 @@ public:
     Game(unsigned int width, unsigned int height);
     ~Game();
     // 初始化游戏状态（加载所有的着色器/纹理/关卡）
-    void Init();
+    void Init(glm::vec2 scale);
 
     // 游戏循环
 
