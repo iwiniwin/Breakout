@@ -30,9 +30,11 @@ else()
         endif()
 
     elseif(APPLE)
+        set (IRRKLANG_BIN_DIR "${3RD_DIR}/irrKlang-1.6.0/bin/macosx-gcc")
         find_library(IRRKLANG_LIBRARY NAMES libirrklang.dylib PATHS "${3RD_DIR}/irrKlang-1.6.0/bin/macosx-gcc")
 
     elseif(UNIX AND NOT APPLE)
+        set (IRRKLANG_BIN_DIR "${3RD_DIR}/irrKlang-1.6.0/bin/inux-gcc")
         find_library(IRRKLANG_LIBRARY NAMES IrrKlang PATHS "${3RD_DIR}/irrKlang-1.6.0/bin/linux-gcc")
 
     endif()

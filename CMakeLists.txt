@@ -72,6 +72,14 @@ target_link_libraries (${PROJECT_NAME} glfw glad freetype stb_image ${IRRKLANG_L
 
 # target_compile_definitions(${PROJECT_NAME} PRIVATE GLFW_INCLUDE_NONE)
 
+# 复制库到工作目录
+add_custom_command(TARGET ${PROJECT_NAME} PRE_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_directory
+    ${IRRKLANG_BIN_DIR}
+    $<TARGET_FILE_DIR:${PROJECT_NAME}>
+    WORKING_DIRECTORY /Users/lensar/Documents/Project/Breakout/build
+)
+
 # 复制资源文件到工作目录
 add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy_directory
@@ -79,13 +87,9 @@ add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
     $<TARGET_FILE_DIR:${PROJECT_NAME}>/resources
 )
 
-# 复制库到工作目录
-if(WIN32)
-    if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC" OR "${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
-        add_custom_command(TARGET ${PROJECT_NAME} PRE_BUILD
-            COMMAND ${CMAKE_COMMAND} -E copy_directory
-            ${IRRKLANG_BIN_DIR}
-            $<TARGET_FILE_DIR:${PROJECT_NAME}>
-        )
-    endif()
-endif(WIN32)
+if(APPLE)
+    add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
+        COMMAND install_name_tool -change /usr/local/lib/libirrklang.dylib @executable_path/libirrklang.dylib ${PROJECT_NAME}
+    )
+endif()
+
