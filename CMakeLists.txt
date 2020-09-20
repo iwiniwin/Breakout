@@ -77,7 +77,6 @@ add_custom_command(TARGET ${PROJECT_NAME} PRE_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy_directory
     ${IRRKLANG_BIN_DIR}
     $<TARGET_FILE_DIR:${PROJECT_NAME}>
-    WORKING_DIRECTORY /Users/lensar/Documents/Project/Breakout/build
 )
 
 # 复制资源文件到工作目录
