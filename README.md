@@ -43,5 +43,6 @@ $ cmake --build .
 > 注意：在MacOS平台编译构建生成可执行文件后，需要通过终端执行`./Breakout`命令启动应用。如果直接双击启动，可能由于工作目录不是当前可执行文件所在目录，导致出现资源文件加载失败问题 
 
 ## 更多
+* [使用VSCode和CMake搭建本项目的开发环境](https://www.cnblogs.com/iwiniwin/p/13705456.html)
 * 与LearnOpenGL教程一致，不包含任何新增功能与优化的源码可以查看[standard分支](https://github.com/iwiniwin/Breakout/tree/standard)
 * 将LearnOpenGL教程中每一章节对应为一个场景的[学习笔记项目](https://github.com/iwiniwin/LearnOpenGL)
